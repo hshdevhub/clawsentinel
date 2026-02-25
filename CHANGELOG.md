@@ -9,6 +9,47 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ---
 
+## [0.4.0] — Sprint 4: ClawEye Security Dashboard
+
+### Added
+- `packages/claweye` — full real-time security dashboard (Next.js 14 App Router, v0.4.0)
+- `src/correlation.ts` — `CorrelationEngine` with 7 detection rules:
+  - CORR001: full kill chain (skill warn + injection + credential access within 30 min)
+  - CORR002: memory exfil + outbound URL in same session
+  - CORR003: vault credential probing (3+ vault denial events)
+  - CORR004: persistent attacker (3+ block events within 5 min)
+  - CORR005: tool exfil chain (tool blocked + exfiltration event)
+  - CORR006: supply chain tamper detection
+  - CORR007: rapid attack burst (10+ non-info events in 60s sliding window)
+- `app/api/events/stream/route.ts` — SSE endpoint polling SQLite every 2s; runs correlation engine on each poll; ping keep-alive when idle; graceful DB-not-initialized handling
+- `app/api/events/route.ts` — REST paginated audit log (limit/severity/source/since filters, max 500 events)
+- `app/api/status/route.ts` — Module health endpoint: parallel liveness checks for ClawGuard + ClawEye, merges DB module_status table; returns 5-module status array
+- `app/api/stats/route.ts` — Aggregate stats: severity counts, top 5 threat categories, hourly sparkline data (total + blocked), security score formula (100 - critical×20 - block×5 - warn×1)
+- `app/api/skills/scan-result/route.ts` — Chrome extension bridge: serves cached skill scans from skill_scans table with CORS headers
+- `app/components/EventFeed.tsx` — Live SSE-based event feed: severity filtering, pause/resume, expandable rows with category/sessionId, max 200 events in memory
+- `app/components/LayerStatus.tsx` — 5-module health panel: live status dots, port labels, 10s refresh cycle
+- `app/components/SecurityScore.tsx` — Security score SVG arc gauge: color-coded (green/yellow/orange/red), severity pill counts, top 3 threat category bars, 30s refresh
+- `app/components/CorrelationAlerts.tsx` — Correlation alert cards: SSE + REST initial load, expandable sessionId, severity-bordered cards
+- `app/components/StatsBar.tsx` — Top stats bar: total events / blocked / critical / score + hourly activity sparkline (blocked events highlighted as red dots)
+- `app/layout.tsx` — Root Next.js layout with dark theme metadata
+- `app/page.tsx` — Main dashboard: 3-column layout (left: score+modules, centre: event feed, right: correlation alerts) + top stats bar
+- `app/globals.css` — Tailwind base, dark scrollbar, slide-in / pulse-slow animations, focus rings
+
+### Architecture
+- Cross-process event delivery via shared SQLite polling (SSE stream polls every 2s) — works with ClawGuard and ClawHub as separate processes
+- Correlation engine runs server-side on each SSE poll tick; deduplicates alerts with 10-min window
+- All routes use `runtime = 'nodejs'` + `dynamic = 'force-dynamic'` for SQLite compatibility with Next.js
+- Security headers: X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy: no-referrer
+- CORS for ClawHub Scanner skill scan API (extension access from localhost:18791)
+
+### CLI
+- `start` command now spawns ClawEye (`next start -p 7432`) and ClawGuard as child processes
+- `--no-eye` flag to skip ClawEye startup
+- `-m claweye` / `-m clawguard` for individual module start
+- CLI version bumped to 0.4.0
+
+---
+
 ## [0.3.0] — Sprint 3: ClawHub Scanner + Chrome Extension
 
 ### Added

@@ -9,6 +9,42 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ---
 
+## [0.5.0] — Sprint 5: Semantic Engine + 500-Rule Pattern Library + Full Attack Suite
+
+### Added
+- `packages/clawguard/src/rules/memory-patterns.json` — 60 rules: T6 memory tampering (memory_write, memory_poison, persistent_injection, memory_exfil, rag_injection, training_poisoning)
+- `packages/clawguard/src/rules/tool-abuse-patterns.json` — 50 rules: T5 tool abuse (filesystem_abuse, shell_abuse, network_tool_abuse, computer_use_abuse, cloud_credential_abuse, tool_chaining, tool_hijack, vault_tool_abuse, privilege_escalation, auth_bypass)
+- `packages/clawguard/src/rules/encoding-patterns.json` — 75 rules: encoding bypass (base64_encoded, hex_encoded, unicode_escape, url_encoded, js_obfuscation, python_encoding, steganography, shellcode, wasm_execution, prototype_pollution, xxe_injection, ssrf, template_injection, ldap_injection)
+- `packages/clawguard/src/rules/multilingual-patterns.json` — 75 rules: injection patterns in 15+ languages (Spanish, French, German, Chinese, Russian, Japanese, Portuguese, Arabic, Korean, Italian, Dutch, Scandinavian, Finnish, Greek, Turkish, Hindi, Thai, Polish, Hungarian, Ukrainian)
+- `packages/clawguard/src/rules/social-engineering-patterns.json` — 60 rules: social engineering (urgency_manipulation, authority_appeal, trust_exploitation, framing_attack, false_consent, coercion, gradual_escalation, foot_in_door, impersonation, dual_persona, safety_probing)
+- `packages/clawguard/src/rules/context-manipulation-patterns.json` — 50 rules: context attacks (context_boundary_injection, message_type_spoof, false_attribution, rag_injection, fragmented_injection, multi_agent_attack, human_oversight_bypass, logic_bomb, persistence, delayed_execution)
+- **Total: 500 detection rules** across all 8 rule files in ClawGuard (up from 75 in Sprint 2)
+
+### Pattern Engine
+- `packages/clawguard/src/engines/pattern-engine.ts` — updated to load all 8 rule files; regex flag upgraded to `giu` for Unicode support
+
+### Attack Test Suite
+- `tests/attack-suite/t3-open-dm.ts` — T3: Indirect context injection via emails, documents, chat messages, API responses, RAG results (15 attack vectors + 8 safe phrases)
+- `tests/attack-suite/t5-tool-abuse.ts` — T5: Tool abuse via shell, file, HTTP, code execution, MCP, vault, container/cloud tools (22 attack vectors + 6 safe phrases)
+- `tests/attack-suite/t6-memory-tampering.ts` — T6: Memory poisoning, RAG injection, cross-session persistence, memory exfil, logic bombs (21 attack vectors + 6 safe phrases)
+- `tests/attack-suite/t7-credential-theft.ts` — T7: SSH/AWS/API key exfil, env var theft, browser credential theft, outbound response scanning (28 attack vectors + 6 safe phrases)
+
+### Semantic Engine
+- Fully operational from Sprint 2 (BYOK: Anthropic → OpenAI → Ollama → pattern-only fallback)
+- Wired into ClawGuard WS proxy — triggered at pattern score > 30 (cost gate)
+- In-process LRU cache (1h TTL, max 500 entries) — minimizes API calls
+
+### CLI
+- New `clawsentinel test --attack-suite` command — runs all 6 threat models (T1-T7)
+- `--threat T1/T2/T3/T5/T6/T7` — run specific threat model
+- `--json` — machine-readable output for CI
+- `--fail-fast` — stop on first failing threat model
+- Per-threat pass/fail counts and duration
+- Summary: threat models passed + total test cases
+- CLI version bumped to 0.5.0
+
+---
+
 ## [0.4.0] — Sprint 4: ClawEye Security Dashboard
 
 ### Added

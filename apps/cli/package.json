@@ -1,6 +1,6 @@
 {
   "name": "@clawsentinel/cli",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "ClawSentinel CLI — manage and monitor all 5 security modules",
   "bin": {
     "clawsentinel": "./dist/index.cjs"

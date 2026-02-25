@@ -1,8 +1,8 @@
 {
   "name": "@clawsentinel/clawvault",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Encrypted credential vault for ClawSentinel — AES-256-GCM + OS keychain",
-  "license": "MIT",
+  "license": "Elastic-2.0",
   "author": "hshdevhub",
   "homepage": "https://clawsentinel.sh",
   "repository": {
@@ -46,7 +46,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@clawsentinel/core": "^0.6.1",
+    "@clawsentinel/core": "^0.7.0",
     "better-sqlite3": "^9.4.0",
     "keytar": "^7.9.0"
   },

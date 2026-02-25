@@ -28,3 +28,6 @@ export type {
 
 export { ClawSentinelConfigSchema } from './types/config.js';
 export { ClawSentinelEventSchema } from './types/events.js';
+
+export { readPlan, writePlan, isPro, hoursUntilExpiry, getMachineId } from './plan.js';
+export type { PlanData } from './plan.js';

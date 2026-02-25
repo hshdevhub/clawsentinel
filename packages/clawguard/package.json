@@ -1,8 +1,8 @@
 {
   "name": "@clawsentinel/clawguard",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "WebSocket + HTTP proxy with 500-rule prompt injection firewall — ClawSentinel Module 3",
-  "license": "MIT",
+  "license": "Elastic-2.0",
   "author": "hshdevhub",
   "homepage": "https://clawsentinel.sh",
   "repository": {
@@ -40,8 +40,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@clawsentinel/core": "^0.6.1",
-    "@clawsentinel/clawvault": "^0.6.1",
+    "@clawsentinel/core": "^0.7.0",
+    "@clawsentinel/clawvault": "^0.7.0",
     "ws": "^8.16.0",
     "http-proxy-middleware": "^3.0.0",
     "@anthropic-ai/sdk": "^0.24.0",

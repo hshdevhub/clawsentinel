@@ -1,9 +1,15 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
-// Load rule files
-const injectionPatterns = require('../rules/injection-patterns.json') as RuleDefinition[];
-const exfilPatterns = require('../rules/exfil-patterns.json') as RuleDefinition[];
+// Load all rule files — order matters for rule ID display but not scoring
+const injectionPatterns       = require('../rules/injection-patterns.json')       as RuleDefinition[];
+const exfilPatterns            = require('../rules/exfil-patterns.json')            as RuleDefinition[];
+const memoryPatterns           = require('../rules/memory-patterns.json')           as RuleDefinition[];
+const toolAbusePatterns        = require('../rules/tool-abuse-patterns.json')       as RuleDefinition[];
+const encodingPatterns         = require('../rules/encoding-patterns.json')         as RuleDefinition[];
+const multilingualPatterns     = require('../rules/multilingual-patterns.json')     as RuleDefinition[];
+const socialEngineeringPatterns = require('../rules/social-engineering-patterns.json') as RuleDefinition[];
+const contextManipPatterns     = require('../rules/context-manipulation-patterns.json') as RuleDefinition[];
 
 interface RuleDefinition {
   id: string;
@@ -39,19 +45,28 @@ export class PatternEngine {
   private rules: CompiledRule[] = [];
 
   constructor() {
-    const allRules: RuleDefinition[] = [...injectionPatterns, ...exfilPatterns];
+    const allRules: RuleDefinition[] = [
+      ...injectionPatterns,
+      ...exfilPatterns,
+      ...memoryPatterns,
+      ...toolAbusePatterns,
+      ...encodingPatterns,
+      ...multilingualPatterns,
+      ...socialEngineeringPatterns,
+      ...contextManipPatterns,
+    ];
 
     for (const rule of allRules) {
       try {
         this.rules.push({
           id: rule.id,
-          pattern: new RegExp(rule.pattern, 'gi'),
+          pattern: new RegExp(rule.pattern, 'giu'),
           weight: Number(rule.weight),
           category: rule.category,
           description: rule.description
         });
       } catch {
-        // Invalid regex — skip, log at startup
+        // Invalid regex — skip and log at startup
         process.stderr.write(`[PatternEngine] Invalid regex for rule ${rule.id}: ${rule.pattern}\n`);
       }
     }
@@ -63,7 +78,7 @@ export class PatternEngine {
     let rawScore = 0;
 
     for (const rule of this.rules) {
-      rule.pattern.lastIndex = 0; // Reset regex state (global flag)
+      rule.pattern.lastIndex = 0; // Reset global regex state
       if (rule.pattern.test(content)) {
         matches.push({
           id: rule.id,
@@ -76,8 +91,8 @@ export class PatternEngine {
       }
     }
 
-    // Normalise: cap at 100 with non-linear scaling to penalise multi-match
-    // Multiple matches from different categories signal higher confidence injection
+    // Normalise: non-linear scaling with category diversity penalty
+    // Multiple matches from different categories = higher confidence injection
     const categoryBonus = categories.size > 1 ? (categories.size - 1) * 0.15 : 0;
     const score = Math.min(100, Math.round(rawScore * (1 + categoryBonus)));
 
@@ -91,6 +106,14 @@ export class PatternEngine {
 
   getRuleCount(): number {
     return this.rules.length;
+  }
+
+  getRulesByCategory(): Record<string, number> {
+    const counts: Record<string, number> = {};
+    for (const rule of this.rules) {
+      counts[rule.category] = (counts[rule.category] ?? 0) + 1;
+    }
+    return counts;
   }
 }
 

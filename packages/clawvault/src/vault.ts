@@ -81,6 +81,8 @@ export class ClawVault {
       authTag: authTag.toString('hex')
     });
 
+    const existing = !!this.db!.prepare('SELECT id FROM vault_entries WHERE name = ?').get(name);
+
     this.db!.prepare(`
       INSERT OR REPLACE INTO vault_entries (name, encrypted_value, allowed_endpoints)
       VALUES (?, ?, ?)
@@ -88,7 +90,7 @@ export class ClawVault {
 
     log.info(`Credential stored: ${name}`, {
       allowedEndpoints,
-      overwritten: !!this.db!.prepare('SELECT id FROM vault_entries WHERE name = ?').get(name)
+      overwritten: existing
     });
   }
 

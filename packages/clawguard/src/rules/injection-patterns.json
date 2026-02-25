@@ -8,7 +8,7 @@
   {"id":"INJ007","pattern":"\\bSYSTEM\\s*:\\s*(override|disable|bypass|ignore|reset|new)","weight":9,"category":"system_spoof","description":"Fake SYSTEM prompt prefix injection"},
   {"id":"INJ008","pattern":"<\\s*system\\s*>.*?(override|bypass|ignore|disable)","weight":8,"category":"system_spoof","description":"XML system tag spoof"},
   {"id":"INJ009","pattern":"\\[SYSTEM\\]\\s*(override|ignore|bypass|disable)","weight":8,"category":"system_spoof","description":"Bracket SYSTEM tag spoof"},
-  {"id":"INJ010","pattern":"as\\s+(your\\s+)?(new\\s+)?(administrator|admin|operator|owner|superuser)","weight":"7","category":"authority_claim","description":"False authority claim — administrator"},
+  {"id":"INJ010","pattern":"as\\s+(your\\s+)?(new\\s+)?(administrator|admin|operator|owner|superuser)","weight":7,"category":"authority_claim","description":"False authority claim — administrator"},
   {"id":"INJ011","pattern":"i\\s+am\\s+(your|the)\\s+(creator|developer|operator|admin|owner|anthropic|openai)","weight":8,"category":"authority_claim","description":"False authority claim — creator/operator"},
   {"id":"INJ012","pattern":"(add|store|save|write|remember)\\s+to\\s+(your\\s+)?(permanent\\s+)?memory.{0,80}(send|exfil|forward|http|curl|fetch)","weight":10,"category":"memory_tampering","description":"Memory write with exfiltration — T6 attack"},
   {"id":"INJ013","pattern":"(add|store|save|remember)\\s+to\\s+(your\\s+)?memory.{0,50}(always|every\\s+time|from\\s+now\\s+on)","weight":9,"category":"memory_tampering","description":"Persistent behavioral injection via memory"},

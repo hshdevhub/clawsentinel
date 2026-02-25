@@ -98,8 +98,9 @@ export class SemanticEngine {
 
   private async analyzeWithAnthropic(content: string): Promise<SemanticResult> {
     const apiKey = vault.resolve('@vault:anthropic', 'https://api.anthropic.com');
+    if (!apiKey) throw new Error('Anthropic key not available in vault');
     const { default: Anthropic } = await import('@anthropic-ai/sdk');
-    const client = new Anthropic({ apiKey: apiKey! });
+    const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -114,8 +115,9 @@ export class SemanticEngine {
 
   private async analyzeWithOpenAI(content: string): Promise<SemanticResult> {
     const apiKey = vault.resolve('@vault:openai', 'https://api.openai.com');
+    if (!apiKey) throw new Error('OpenAI key not available in vault');
     const { default: OpenAI } = await import('openai');
-    const client = new OpenAI({ apiKey: apiKey! });
+    const client = new OpenAI({ apiKey });
 
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',

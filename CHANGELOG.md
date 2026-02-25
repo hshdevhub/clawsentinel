@@ -9,6 +9,31 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ---
 
+## [0.7.0] — Sprint 7: Billing & Pro Plan
+
+### Added
+- **`clawsentinel activate <key>`** — Exchanges a refresh_token for a 24h signed JWT. Locks the token to the current machine via a SHA-256 fingerprint (hostname + platform + username + CPU model). Sharing a token to another machine auto-revokes the original owner's access within 24 hours.
+- **`clawsentinel billing status`** — Displays current plan (Free / Pro), account email, and hours remaining on the access token.
+- **`clawsentinel billing portal`** — Opens the Stripe billing portal in the default browser (cancel, update card, view invoices).
+- **`clawsentinel upgrade`** — Opens the Stripe checkout page (7-day free trial, then $9/month). No-ops if already on Pro.
+- **Background plan renewal** — ClawGuard silently renews the Pro access token every 23 hours at startup. Uses `POST /api/renew` with `refresh_token` + `machine_id`. If the subscription is cancelled, the plan downgrades to Free automatically within 24 hours — no user action needed.
+- **`getMachineId()`** exported from `@clawsentinel/core` — shared machine fingerprint utility used by both `activate` and ClawGuard renewal.
+- **Vercel API backend** (`apps/api/`) — 4 serverless endpoints: `/api/webhook` (Stripe events), `/api/activate`, `/api/renew`, `/api/checkout`. Backed by Upstash Redis. Sends activation emails via Resend.
+
+### Pro plan enforcement
+- **Semantic engine** (`clawguard`) — `isPro()` gate; LLM analysis is skipped for Free users (pattern-only protection still applies).
+- **Correlation engine** (`claweye`) — `isPro()` gate in the SSE stream route; `CorrelationEngine.evaluate()` is not instantiated for Free users.
+- Free plan still receives all 500-rule pattern protection, WS/HTTP blocking, ClawHub scanning, and ClawVault encryption.
+
+### License
+- Changed from **MIT** to **Elastic License 2.0 (ELv2)**: open source, self-host permitted, but circumventing plan checks or re-hosting as a managed service is prohibited.
+
+### Version bumps
+- All packages 0.6.1 → 0.7.0 (`core`, `clawguard`, `clawvault`, `clawhub-scanner`, `claweye`, CLI)
+- `apps/api` introduced at 0.7.0
+
+---
+
 ## [0.6.1] — Sprint 6c: Polish + Monitor Mode
 
 ### Added

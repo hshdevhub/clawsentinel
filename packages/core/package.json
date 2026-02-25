@@ -1,8 +1,8 @@
 {
   "name": "@clawsentinel/core",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Shared types, event bus, SQLite schema and logger for ClawSentinel",
-  "license": "MIT",
+  "license": "Elastic-2.0",
   "author": "hshdevhub",
   "homepage": "https://clawsentinel.sh",
   "repository": {

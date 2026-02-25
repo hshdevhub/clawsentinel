@@ -7,6 +7,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import os from 'os';
 import { getCorrelationEngine } from '../../../../src/correlation.js';
+import { isPro } from '@clawsentinel/core';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,7 +30,7 @@ interface EventRow {
 
 export async function GET(req: NextRequest) {
   const encoder = new TextEncoder();
-  const correlation = getCorrelationEngine();
+  const correlation = isPro() ? getCorrelationEngine() : null;
 
   const stream = new ReadableStream({
     start(controller) {
@@ -66,9 +67,9 @@ export async function GET(req: NextRequest) {
           return;
         }
 
-        // Run correlation engine periodically
+        // Run correlation engine periodically (Pro only)
         try {
-          correlation.evaluate();
+          correlation?.evaluate();
         } catch { /* correlation errors are non-fatal */ }
 
         if (!db) {

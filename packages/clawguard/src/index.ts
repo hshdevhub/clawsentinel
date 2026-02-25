@@ -6,12 +6,12 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { eventBus, moduleLogger, getDb } from '@clawsentinel/core';
+import { eventBus, moduleLogger, getDb, readPlan, writePlan, getMachineId, hoursUntilExpiry } from '@clawsentinel/core';
 import { startWSProxy } from './proxy/ws-proxy.js';
 import { startHTTPProxy } from './proxy/http-proxy.js';
 import { startClawHubScanner } from '@clawsentinel/clawhub-scanner';
 
-export const CLAWGUARD_VERSION = '0.6.0';
+export const CLAWGUARD_VERSION = '0.7.0';
 
 const log = moduleLogger('clawguard');
 
@@ -40,6 +40,50 @@ function markStatus(status: 'running' | 'stopped' | 'error') {
                   started_at = CASE WHEN excluded.status = 'running' THEN datetime('now') ELSE started_at END`)
       .run('clawguard', status, CLAWGUARD_VERSION);
   } catch { /* DB may not be ready yet — non-fatal */ }
+}
+
+const API_BASE = process.env['CLAWSENTINEL_API_URL'] ?? 'https://clawsentinel-api.vercel.app';
+const RENEWAL_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
+
+/**
+ * Silently renew the Pro access token.
+ * Runs every 23 hours in the background — zero user action needed.
+ * If renewal fails (cancelled subscription, no internet), the token simply
+ * expires and isPro() returns false within 24h — no crash, no user-visible error.
+ */
+async function renewPlanIfNeeded(): Promise<void> {
+  const plan = readPlan();
+  if (plan.plan !== 'pro' || !plan.refresh_token) return;
+
+  // Only renew if expiring within 2 hours (avoids unnecessary API calls)
+  const hours = hoursUntilExpiry();
+  if (hours > 2) return;
+
+  try {
+    const machineId = getMachineId();
+    const res = await fetch(`${API_BASE}/api/renew`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: plan.refresh_token, machine_id: machineId })
+    });
+
+    if (!res.ok) {
+      log.warn('Plan renewal failed — will retry on next interval', { status: res.status });
+      return;
+    }
+
+    const body = await res.json() as { access_token?: string; plan?: string };
+    if (body.access_token) {
+      writePlan({ ...plan, access_token: body.access_token });
+      log.info('Pro plan renewed silently');
+    } else {
+      // Server returned { plan: 'free' } — subscription cancelled
+      writePlan({ ...plan, plan: 'free', access_token: undefined });
+      log.info('Subscription cancelled — plan downgraded to Free');
+    }
+  } catch (err) {
+    log.warn('Plan renewal network error — will retry on next interval', { err: String(err) });
+  }
 }
 
 async function main() {
@@ -71,9 +115,18 @@ async function main() {
 
   log.info('ClawGuard ready — passthrough-first guarantee active');
 
+  // ── Background plan renewal (Pro only) ────────────────────────────────────
+  // Check immediately on startup (covers the case where ClawGuard was offline
+  // during the usual renewal window), then repeat every 23 hours.
+  renewPlanIfNeeded().catch(() => { /* non-fatal */ });
+  const renewalTimer = setInterval(() => {
+    renewPlanIfNeeded().catch(() => { /* non-fatal */ });
+  }, RENEWAL_INTERVAL_MS);
+
   // Graceful shutdown
   const shutdown = (signal: string) => {
     log.info(`Received ${signal} — shutting down`);
+    clearInterval(renewalTimer);
     markStatus('stopped');
     removePid();
     wss.close(() => {

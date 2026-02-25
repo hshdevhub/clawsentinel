@@ -219,9 +219,10 @@ function forwardRequest(
   res: http.ServerResponse,
   body: string
 ): void {
+  const upstreamUrl = new URL(UPSTREAM_HTTP);
   const options: http.RequestOptions = {
-    hostname: '127.0.0.1',
-    port: 18789,
+    hostname: upstreamUrl.hostname,
+    port: parseInt(upstreamUrl.port || '80', 10),
     path: req.url,
     method: req.method,
     headers: { ...req.headers, 'content-length': Buffer.byteLength(body).toString() }

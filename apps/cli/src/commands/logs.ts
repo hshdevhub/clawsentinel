@@ -31,7 +31,7 @@ export function logsCommand(): Command {
         params.push(String(limit));
 
         type EventRow = { timestamp: string; severity: string; source: string; description: string };
-        const rows = db.prepare(query).all(...params, limit) as EventRow[];
+        const rows = db.prepare(query).all(...params) as EventRow[];
 
         if (rows.length === 0) {
           console.log('[ClawSentinel] No events in audit log yet.');

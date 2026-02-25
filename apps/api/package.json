@@ -1,0 +1,27 @@
+{
+  "name": "@clawsentinel/api",
+  "version": "0.7.0",
+  "private": true,
+  "description": "ClawSentinel billing API — Vercel serverless backend",
+  "scripts": {
+    "dev": "vercel dev --listen 3000",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.0",
+    "jsonwebtoken": "^9.0.2",
+    "resend": "^4.0.0",
+    "stripe": "^17.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.0.0",
+    "@vercel/node": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vercel": "^39.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

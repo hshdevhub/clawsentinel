@@ -5,7 +5,7 @@ import { taintTracker } from '../engines/taint-tracker.js';
 import { patternEngine } from '../engines/pattern-engine.js';
 import { semanticEngine } from '../engines/semantic-engine.js';
 import { riskScorer } from '../engines/risk-scorer.js';
-import { eventBus, moduleLogger, config } from '@clawsentinel/core';
+import { eventBus, moduleLogger, config, isPro } from '@clawsentinel/core';
 import crypto from 'crypto';
 
 const log = moduleLogger('clawguard:ws');
@@ -166,27 +166,30 @@ async function inspectInbound(
     // Pass through immediately and verify asynchronously.
     const risk = riskScorer.compute(patternResult, null, riskContext);
 
-    // Fire-and-forget: run LLM check after forwarding
-    setImmediate(() => {
-      semanticEngine.analyze(frame.content).then(semanticResult => {
-        const asyncRisk = riskScorer.compute(patternResult, semanticResult, riskContext);
-        if (asyncRisk.action === 'block' && semanticResult.isInjection) {
-          eventBus.emit('clawguard:semantic-confirm', {
-            source: 'clawguard',
-            severity: 'critical',
-            category: 'injection',
-            description: `Semantic engine confirmed injection (post-pass): ${semanticResult.reason}`,
-            sessionId,
-            payload: {
-              score: asyncRisk.score,
-              provider: semanticResult.provider,
-              confidence: semanticResult.confidence,
-              contentHash: crypto.createHash('sha256').update(raw).digest('hex').slice(0, 16)
-            }
-          });
-        }
-      }).catch(() => { /* semantic failure — already passed through, non-fatal */ });
-    });
+    // Fire-and-forget LLM check — Pro plan only
+    // Free plan users get pattern-only protection (still catches all known attack signatures)
+    if (isPro()) {
+      setImmediate(() => {
+        semanticEngine.analyze(frame.content).then(semanticResult => {
+          const asyncRisk = riskScorer.compute(patternResult, semanticResult, riskContext);
+          if (asyncRisk.action === 'block' && semanticResult.isInjection) {
+            eventBus.emit('clawguard:semantic-confirm', {
+              source: 'clawguard',
+              severity: 'critical',
+              category: 'injection',
+              description: `Semantic engine confirmed injection (post-pass): ${semanticResult.reason}`,
+              sessionId,
+              payload: {
+                score: asyncRisk.score,
+                provider: semanticResult.provider,
+                confidence: semanticResult.confidence,
+                contentHash: crypto.createHash('sha256').update(raw).digest('hex').slice(0, 16)
+              }
+            });
+          }
+        }).catch(() => { /* semantic failure — non-fatal, already passed through */ });
+      });
+    }
 
     // Monitor mode: already warn-or-pass, honour it
     const mode = config.load().clawguard.mode;

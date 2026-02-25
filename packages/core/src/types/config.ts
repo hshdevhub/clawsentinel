@@ -28,6 +28,7 @@ export const ClawSentinelConfigSchema = z.object({
   }).default({}),
 
   clawguard: z.object({
+    mode: z.enum(['enforce', 'monitor']).default('enforce'),
     blockThreshold: z.number().min(0).max(100).default(71),
     warnThreshold: z.number().min(0).max(100).default(31),
     maxLatencyMs: z.number().default(50)

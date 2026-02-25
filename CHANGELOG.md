@@ -9,6 +9,26 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ---
 
+## [0.6.1] — Sprint 6c: Polish + Monitor Mode
+
+### Added
+- `clawsentinel config` — full config management command with `list`, `get`, `set`, `reset` subcommands; dot-path notation for nested keys (e.g. `clawguard.mode`, `semanticEngine.enabled`)
+- `clawsentinel uninstall` — graceful teardown: stops all running modules (SIGTERM), removes event DB and `~/.clawsentinel/` directory; `--keep-db` flag to preserve logs; interactive confirmation with `--yes` bypass
+- `clawguard.mode` config key — `enforce` (default, blocks attacks) or `monitor` (alerts only, never blocks); enables safe deployment in sensitive environments
+
+### Fixed
+- **Passthrough-first semantic engine**: ClawGuard no longer awaits LLM analysis before forwarding messages. Pattern score ≥ blockThreshold → block immediately. Pattern score in warn range → pass message through immediately, run LLM async, emit `clawguard:semantic-confirm` event if injection confirmed retroactively. Zero LLM latency on the critical path.
+- Monitor mode applied consistently in all score branches: high-score blocks, mid-range blocks, and pattern-only blocks all honour `clawguard.mode = monitor`
+
+### Schema
+- `config.ts` — added `clawguard.mode: 'enforce' | 'monitor'` field (default `'enforce'`)
+
+### Version bumps
+- All core packages 0.6.0 → 0.6.1
+- Internal workspace deps updated to `^0.6.1`
+
+---
+
 ## [0.6.0] — Sprint 6: Launch Prep
 
 ### Added

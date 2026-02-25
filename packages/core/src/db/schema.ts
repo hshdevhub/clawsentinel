@@ -19,18 +19,19 @@ export function applySchema(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_events_severity   ON events(severity);
     CREATE INDEX IF NOT EXISTS idx_events_source     ON events(source);
 
-    -- Skill scan results (ClawHub Scanner writes here)
+    -- Skill scan results (ClawHub Scanner writes here; queried by ClawEye + Chrome extension)
     CREATE TABLE IF NOT EXISTS skill_scans (
-      id            INTEGER PRIMARY KEY AUTOINCREMENT,
-      skill_name    TEXT NOT NULL,
-      skill_version TEXT,
-      score         INTEGER NOT NULL CHECK(score BETWEEN 0 AND 100),
-      passed        INTEGER NOT NULL CHECK(passed IN (0, 1)),
-      findings      TEXT NOT NULL DEFAULT '[]',
-      scanned_at    TEXT NOT NULL DEFAULT (datetime('now'))
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      skill_id   TEXT NOT NULL,
+      score      INTEGER NOT NULL CHECK(score BETWEEN 0 AND 100),
+      verdict    TEXT NOT NULL DEFAULT 'warn' CHECK(verdict IN ('safe','warn','block')),
+      findings   TEXT NOT NULL DEFAULT '[]',
+      source     TEXT NOT NULL DEFAULT 'watcher',
+      scanned_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE INDEX IF NOT EXISTS idx_skill_scans_name ON skill_scans(skill_name);
+    CREATE INDEX IF NOT EXISTS idx_skill_scans_id   ON skill_scans(skill_id);
+    CREATE INDEX IF NOT EXISTS idx_skill_scans_time ON skill_scans(scanned_at DESC);
 
     -- Skill file hashes for tamper detection (ClawHub Scanner)
     CREATE TABLE IF NOT EXISTS skill_hashes (
@@ -52,9 +53,10 @@ export function applySchema(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS module_status (
       name          TEXT PRIMARY KEY,
       status        TEXT NOT NULL DEFAULT 'stopped',
-      version       TEXT NOT NULL,
+      version       TEXT NOT NULL DEFAULT '',
       started_at    TEXT,
       last_event_at TEXT,
+      updated_at    TEXT NOT NULL DEFAULT (datetime('now')),
       error_message TEXT,
       stats         TEXT NOT NULL DEFAULT '{}'
     );

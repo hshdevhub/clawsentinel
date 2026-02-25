@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import chokidar from 'chokidar';
-import { moduleLogger, eventBus } from '@clawsentinel/core';
+import { moduleLogger, eventBus, getDb } from '@clawsentinel/core';
 import { skillScanner } from './scanner.js';
 import { hashVerifier } from './hash-verifier.js';
 
@@ -153,6 +153,22 @@ export class SkillWatcher {
       } catch (err) {
         log.warn('Failed to record hash', { skillId, error: String(err) });
       }
+    }
+
+    // Persist scan result to skill_scans table (queried by ClawEye + Chrome extension)
+    try {
+      const db = getDb();
+      db.prepare(`INSERT INTO skill_scans (skill_id, score, verdict, findings, source)
+                  VALUES (?, ?, ?, ?, ?)`)
+        .run(
+          skillId,
+          result.score,
+          result.verdict,
+          JSON.stringify(result.findings),
+          result.source ?? 'watcher'
+        );
+    } catch (err) {
+      log.warn('Failed to persist scan result', { skillId, error: String(err) });
     }
 
     // Emit events based on verdict

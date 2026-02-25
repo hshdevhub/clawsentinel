@@ -1,7 +1,36 @@
 {
-  "name": "@clawsentinel/cli",
-  "version": "0.5.0",
-  "description": "ClawSentinel CLI — manage and monitor all 5 security modules",
+  "name": "clawsentinel",
+  "version": "0.6.0",
+  "description": "The active security layer for OpenClaw — one install, five layers, complete protection",
+  "license": "MIT",
+  "author": "hshdevhub",
+  "homepage": "https://clawsentinel.sh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hshdevhub/clawsentinel.git",
+    "directory": "apps/cli"
+  },
+  "keywords": [
+    "clawsentinel",
+    "openclaw",
+    "ai-security",
+    "prompt-injection",
+    "llm-security",
+    "claude-code",
+    "ai-agent-security",
+    "supply-chain"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "clawsentinel": "./dist/index.cjs"
   },
@@ -14,9 +43,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@clawsentinel/core": "*",
-    "@clawsentinel/clawvault": "*",
-    "@clawsentinel/clawhub-scanner": "*",
+    "@clawsentinel/core": "^0.6.0",
+    "@clawsentinel/clawvault": "^0.6.0",
+    "@clawsentinel/clawhub-scanner": "^0.6.0",
     "commander": "^12.0.0",
     "chalk": "^5.3.0",
     "ora": "^8.0.1"

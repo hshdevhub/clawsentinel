@@ -1,13 +1,42 @@
 import { Command } from 'commander';
 import { getDb, config } from '@clawsentinel/core';
 
-const MODULE_ICONS: Record<string, string> = {
-  running: '✓',
-  stopped: '○',
-  error: '✗',
-  disabled: '-',
-  initializing: '◌'
+const VERSION = '0.6.0';
+
+// Inline ANSI helpers (no ESM-only deps needed for status)
+const c = {
+  green:  (s: string) => `\x1b[32m${s}\x1b[0m`,
+  yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
+  red:    (s: string) => `\x1b[31m${s}\x1b[0m`,
+  cyan:   (s: string) => `\x1b[36m${s}\x1b[0m`,
+  grey:   (s: string) => `\x1b[90m${s}\x1b[0m`,
+  bold:   (s: string) => `\x1b[1m${s}\x1b[0m`,
+  dim:    (s: string) => `\x1b[2m${s}\x1b[0m`,
 };
+
+type ModuleStatus = 'running' | 'stopped' | 'error' | 'disabled' | 'initializing';
+
+function statusDot(status: ModuleStatus): string {
+  switch (status) {
+    case 'running':      return c.green('●');
+    case 'error':        return c.red('●');
+    case 'initializing': return c.yellow('◌');
+    case 'stopped':      return c.yellow('○');
+    case 'disabled':     return c.grey('○');
+    default:             return c.grey('?');
+  }
+}
+
+function statusLabel(status: ModuleStatus): string {
+  switch (status) {
+    case 'running':      return c.green('running');
+    case 'error':        return c.red('error');
+    case 'initializing': return c.yellow('starting');
+    case 'stopped':      return c.yellow('stopped');
+    case 'disabled':     return c.grey('disabled');
+    default:             return c.grey(status);
+  }
+}
 
 export function statusCommand(): Command {
   return new Command('status')
@@ -18,71 +47,101 @@ export function statusCommand(): Command {
 
       const modules = [
         {
-          name: 'ClawGuard',
-          id: 'clawguard',
-          description: 'WebSocket + HTTP proxy, injection firewall',
-          port: cfg.proxy.listenPort,
-          enabled: cfg.modules.clawguard
-        },
-        {
-          name: 'ClawVault',
-          id: 'clawvault',
-          description: 'Encrypted credential store',
-          enabled: cfg.modules.clawvault
+          name: 'ClawBox',
+          id:   'clawbox',
+          icon: '🐳',
+          description: 'Hardened Docker deployment',
+          enabled: cfg.modules.clawbox,
+          port: undefined as number | undefined,
         },
         {
           name: 'ClawHub Scanner',
-          id: 'clawhub-scanner',
+          id:   'clawhub-scanner',
+          icon: '🔍',
           description: 'Supply chain protection, skill scanner',
-          enabled: cfg.modules.clawhubScanner
+          enabled: cfg.modules.clawhubScanner,
+          port: undefined as number | undefined,
         },
         {
-          name: 'ClawBox',
-          id: 'clawbox',
-          description: 'Hardened Docker deployment',
-          enabled: cfg.modules.clawbox
+          name: 'ClawVault',
+          id:   'clawvault',
+          icon: '🔐',
+          description: 'Encrypted credential store (AES-256 + OS keychain)',
+          enabled: cfg.modules.clawvault,
+          port: undefined as number | undefined,
+        },
+        {
+          name: 'ClawGuard',
+          id:   'clawguard',
+          icon: '🛡',
+          description: 'WebSocket + HTTP proxy, 500-rule injection firewall',
+          enabled: cfg.modules.clawguard,
+          port: cfg.proxy.listenPort,
         },
         {
           name: 'ClawEye',
-          id: 'claweye',
-          description: 'Real-time security dashboard',
+          id:   'claweye',
+          icon: '👁',
+          description: 'Real-time security dashboard + correlation engine',
+          enabled: cfg.modules.claweye,
           port: cfg.claweye.port,
-          enabled: cfg.modules.claweye
-        }
+        },
       ];
 
-      // Try to read actual status from DB if it exists
+      // Try to read actual status from DB
       let dbStatuses: Record<string, string> = {};
       try {
         const db = getDb();
         const rows = db.prepare('SELECT name, status FROM module_status').all() as Array<{ name: string; status: string }>;
         dbStatuses = Object.fromEntries(rows.map(r => [r.name, r.status]));
       } catch {
-        // DB not yet initialized — show registered status
+        // DB not yet initialised — show config-derived status
       }
 
       if (options.json) {
-        console.log(JSON.stringify({ version: '0.1.0', modules, dbStatuses }, null, 2));
+        const out = modules.map(m => ({
+          id:          m.id,
+          name:        m.name,
+          status:      dbStatuses[m.id] ?? (m.enabled ? 'stopped' : 'disabled'),
+          port:        m.port ?? null,
+          enabled:     m.enabled,
+          description: m.description,
+        }));
+        console.log(JSON.stringify({ version: VERSION, plan: 'free', modules: out }, null, 2));
         return;
       }
 
+      const now = new Date().toLocaleTimeString();
       console.log('');
-      console.log('  ClawSentinel v0.1.0 — Module Status');
-      console.log('  ─────────────────────────────────────────────────');
+      console.log(`  ${c.bold(`ClawSentinel v${VERSION}`)}  ${c.dim(`· Free Plan · ${now}`)}`);
+      console.log(`  ${c.grey('─'.repeat(54))}`);
 
       for (const mod of modules) {
-        const rawStatus = dbStatuses[mod.id] ?? (mod.enabled ? 'stopped' : 'disabled');
-        const status = rawStatus as string;
-        const icon = MODULE_ICONS[status] ?? '?';
-        const portStr = 'port' in mod ? ` [:${mod.port}]` : '';
-        const enabledStr = mod.enabled ? '' : ' (disabled)';
+        const rawStatus = (dbStatuses[mod.id] ?? (mod.enabled ? 'stopped' : 'disabled')) as ModuleStatus;
+        const dot   = statusDot(rawStatus);
+        const label = statusLabel(rawStatus).padEnd(rawStatus === 'disabled' ? 15 : 14 + (rawStatus === 'running' ? 0 : 0));
+        const portStr = mod.port != null ? c.dim(` :${mod.port}`) : '';
 
-        console.log(`  ${icon} ${mod.name.padEnd(20)} ${status.padEnd(14)}${portStr}${enabledStr}`);
-        console.log(`    ${mod.description}`);
+        console.log(`  ${dot}  ${c.bold(mod.name.padEnd(18))}  ${label.padEnd(20)}${portStr}`);
+        console.log(`     ${c.dim(mod.description)}`);
       }
 
-      console.log('  ─────────────────────────────────────────────────');
-      console.log('  Run: clawsentinel start   to activate all modules');
+      console.log(`  ${c.grey('─'.repeat(54))}`);
+
+      // Quick hint based on overall state
+      const allStopped = modules.every(m => {
+        const s = dbStatuses[m.id] ?? (m.enabled ? 'stopped' : 'disabled');
+        return s === 'stopped' || s === 'disabled';
+      });
+      const anyError = modules.some(m => dbStatuses[m.id] === 'error');
+
+      if (anyError) {
+        console.log(`  ${c.red('⚠')}  One or more modules encountered an error. Run ${c.cyan('clawsentinel logs')} to investigate.`);
+      } else if (allStopped) {
+        console.log(`  ${c.dim('Run')} ${c.cyan('clawsentinel start')} ${c.dim('to activate all modules')}`);
+      } else {
+        console.log(`  ${c.dim('Run')} ${c.cyan('clawsentinel logs')} ${c.dim('to view the audit log')}`);
+      }
       console.log('');
     });
 }

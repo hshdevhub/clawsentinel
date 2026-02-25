@@ -1,0 +1,47 @@
+# Traefik static configuration — ClawBox
+# ClawSentinel v0.1.0
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# API and dashboard — disabled for security
+api:
+  dashboard: false
+  insecure: false
+
+# Entry points
+entryPoints:
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: le
+      middlewares:
+        - ratelimit@docker
+        - secheaders@docker
+
+# Certificate resolver — Let's Encrypt
+certificatesResolvers:
+  le:
+    acme:
+      tlsChallenge: {}
+      storage: /letsencrypt/acme.json
+
+# Logging
+log:
+  level: WARN
+  format: json
+
+accessLog:
+  format: json
+  filters:
+    statusCodes:
+      - "400-599"          # Log errors only — not every request
+
+# Providers
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: internal

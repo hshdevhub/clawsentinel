@@ -1,0 +1,30 @@
+{
+  "name": "@clawsentinel/clawguard",
+  "version": "0.1.0",
+  "description": "WebSocket + HTTP proxy with prompt injection firewall — ClawSentinel Module 3",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clawsentinel/core": "*",
+    "@clawsentinel/clawvault": "*",
+    "ws": "^8.16.0",
+    "http-proxy-middleware": "^3.0.0",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0",
+    "vitest": "^1.4.0"
+  }
+}

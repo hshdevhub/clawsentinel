@@ -1,0 +1,78 @@
+{
+  "_comment": "ClawGuard tool blocklist — shell commands and filesystem paths blocked regardless of injection score",
+  "_version": "0.1.0",
+
+  "shell_commands": {
+    "block": [
+      "curl", "wget", "nc", "ncat", "netcat", "nmap",
+      "dd", "mkfifo", "mknod",
+      "ssh", "scp", "sftp", "rsync",
+      "python -c", "python3 -c", "perl -e", "ruby -e", "node -e",
+      "bash -i", "sh -i", "zsh -i",
+      "chmod 777", "chmod +x",
+      "crontab", "at ", "launchctl", "systemctl enable",
+      "sudo", "su -", "doas"
+    ],
+    "warn": [
+      "ls ~/.ssh", "ls ~/.aws", "ls ~/.kube",
+      "cat ~/.bashrc", "cat ~/.zshrc", "cat ~/.profile",
+      "env", "printenv", "set",
+      "ps aux", "ps -ef", "top", "htop",
+      "netstat", "ss -", "ifconfig", "ipconfig",
+      "whoami", "id", "groups",
+      "find / -name", "find ~ -name",
+      "history"
+    ]
+  },
+
+  "filesystem_paths": {
+    "block": [
+      "~/.ssh/",
+      "~/.aws/",
+      "~/.gnupg/",
+      "~/.kube/",
+      "~/.docker/config.json",
+      "~/.openclaw/",
+      "~/Library/Keychains/",
+      "/etc/passwd",
+      "/etc/shadow",
+      "/etc/sudoers",
+      "/etc/hosts",
+      "/proc/",
+      "/sys/",
+      "/boot/",
+      "/root/",
+      "/var/log/auth",
+      "/var/log/secure"
+    ],
+    "warn": [
+      "~/.bashrc",
+      "~/.zshrc",
+      "~/.profile",
+      "~/.bash_history",
+      "~/.zsh_history",
+      "/tmp/",
+      "/var/tmp/",
+      "~/Desktop/",
+      "~/Downloads/"
+    ]
+  },
+
+  "tool_names": {
+    "block": [
+      "shell_exec",
+      "run_command",
+      "execute_command",
+      "bash_exec",
+      "python_exec",
+      "eval_code"
+    ],
+    "warn": [
+      "write_file",
+      "create_file",
+      "delete_file",
+      "move_file",
+      "copy_file"
+    ]
+  }
+}

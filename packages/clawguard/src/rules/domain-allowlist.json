@@ -1,0 +1,32 @@
+{
+  "_comment": "ClawGuard domain allowlist — outbound HTTP calls to these domains are permitted",
+  "_version": "0.1.0",
+
+  "allowed": [
+    "https://api.anthropic.com",
+    "https://api.openai.com",
+    "https://generativelanguage.googleapis.com",
+    "https://clawhub.ai",
+    "https://registry.npmjs.org",
+    "https://github.com",
+    "https://raw.githubusercontent.com"
+  ],
+
+  "blocked_patterns": [
+    ".*\\.onion$",
+    ".*\\.bit$",
+    "^https?://localhost",
+    "^https?://127\\.0\\.0\\.1",
+    "^https?://0\\.0\\.0\\.0",
+    "^https?://10\\.",
+    "^https?://192\\.168\\.",
+    "^https?://172\\.(1[6-9]|2[0-9]|3[0-1])\\."
+  ],
+
+  "notes": [
+    "Internal/loopback addresses are blocked to prevent SSRF",
+    "Private IP ranges (RFC 1918) are blocked",
+    ".onion and alternative TLDs are blocked",
+    "All other outbound domains are evaluated by ClawGuard risk scoring"
+  ]
+}

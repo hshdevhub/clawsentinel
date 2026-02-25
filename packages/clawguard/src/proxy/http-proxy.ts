@@ -36,10 +36,27 @@ export function startHTTPProxy(): http.Server {
       res.end(JSON.stringify({
         status: 'ok',
         module: 'clawguard',
-        version: '0.2.0',
+        version: '0.3.0',
         rules: patternEngine.getRuleCount(),
         upstreamHttp: UPSTREAM_HTTP
       }));
+      return;
+    }
+
+    // ── /api/skills/scan-result — Chrome extension badge endpoint ─────────
+    // Returns cached scan result for a skill ID (populated by ClawHub Scanner)
+    if (req.url?.startsWith('/api/skills/scan-result')) {
+      const urlObj = new URL(req.url, `http://localhost`);
+      const skillId = urlObj.searchParams.get('id');
+      if (!skillId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing skill id parameter' }));
+        return;
+      }
+      // Return 404 here — ClawEye dashboard (Sprint 4) will serve cached results
+      // For now the extension falls back to inline scan
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Skill not yet scanned — platform scan pending' }));
       return;
     }
 

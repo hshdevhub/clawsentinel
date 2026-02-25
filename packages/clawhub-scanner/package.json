@@ -1,9 +1,16 @@
 {
   "name": "@clawsentinel/clawhub-scanner",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Pre-install skill scanner and supply chain protection — ClawSentinel Module 4",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "dev": "tsx src/index.ts",
@@ -13,10 +20,12 @@
   },
   "dependencies": {
     "@clawsentinel/core": "*",
+    "better-sqlite3": "^9.4.0",
     "chokidar": "^3.6.0",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.0.0",
     "typescript": "^5.4.0",
     "tsup": "^8.0.0",

@@ -9,6 +9,48 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ---
 
+## [0.3.0] — Sprint 3: ClawHub Scanner + Chrome Extension
+
+### Added
+- `packages/clawhub-scanner` — full supply chain protection module (v0.3.0)
+- `src/scanner.ts` — `SkillScanner` static analysis engine: 60+ rules across 4 categories, line-number-aware findings, multi-category risk bonus, 0–100 safety score
+- `src/rules/shell-patterns.ts` — 18 shell execution rules: exec/spawn/execSync, reverse shells (/dev/tcp, mkfifo, nc), persistence (cron, launchctl, systemctl), destructive commands (rm -rf)
+- `src/rules/http-patterns.ts` — 12 outbound HTTP rules: non-allowlisted domains, env var exfil fetch, credential-in-URL patterns, SSRF (private IPs, loopback), .onion, image beacons, obfuscated endpoints
+- `src/rules/obfuscation-patterns.ts` — 15 obfuscation rules: eval, new Function, atob/Buffer.from base64, vm.runInThisContext, hex/unicode escape sequences, constructor bypass, dynamic require
+- `src/rules/permission-rules.ts` — 18 permission rules: credential file access (~/.ssh, ~/.aws, ~/.openclaw, ~/.gnupg, ~/.kube), AI API key env vars, environment bulk dump, /proc and /etc access, embedded injection payloads in skill prompts, native .node addon loading
+- `src/hash-verifier.ts` — SHA-256 hash recording + post-install tamper detection; persists to SQLite
+- `src/watcher.ts` — chokidar-based continuous monitoring of `~/.openclaw/skills/`; debounced re-scan on change; tamper alert via eventBus on hash mismatch
+- `src/interceptor.ts` — `InstallInterceptor`: fetches skill source from ClawHub API, runs full scan, emits `clawhub:install-blocked` / `clawhub:install-warned` / `clawhub:scan-failed` events; records hashes post-install
+- `packages/extension` — Chrome Extension MV3: ClawSentinel Guard (v0.3.0)
+- `extension/manifest.json` — MV3 manifest: content scripts on all URLs + clawhub.ai, background service worker, storage + activeTab permissions
+- `extension/content/scanner.js` — DOM injection scanner: 17 patterns, scans page HTML, text nodes, hidden elements (15+ CSS selectors), meta tags, JSON-LD, data attributes; sends result to service worker
+- `extension/content/clawhub-badges.js` — ClawHub skill badge injector: queries platform API at :18791, falls back to inline scan, MutationObserver for SPA navigation, animated badge UI
+- `extension/content/scanner.css` — Badge styles: safe/warning/danger/unscanned/loading states with blur backdrop and animated pulse
+- `extension/background/service-worker.js` — Manages per-tab scan results, toolbar icon color and badge count, webNavigation reset on page load
+- `extension/popup/popup.html` + `popup.js` + `popup.css` — Full popup UI: risk banner, findings list with severity color coding, platform online/offline indicator
+- `extension/scripts/build.js` — esbuild-free build: copies static assets to dist/, generates valid PNG icons (4 colors × 3 sizes) using raw PNG construction (no external deps)
+- `apps/cli/src/commands/scan.ts` — `clawsentinel scan <skill-id>` command: local file scan + ClawHub pre-install intercept, colored terminal output, `--force` flag, `--json` output
+- `tests/attack-suite/t2-supply-chain.ts` — 14 malicious skill vectors + 7 safe skills + 3 definite-block tests, fully wired to SkillScanner
+
+### Security Coverage
+- T2 (Supply chain / skill poisoning): SkillScanner + HashVerifier + InstallInterceptor
+- T3 (Persistent backdoor in skill): shell + cron persistence rules
+- T4 (Credential theft from skill source): credential_access + http_exfil rules
+- Browser-side: DOM injection scanner on every webpage visited
+
+### Architecture
+- 60+ static analysis rules with per-rule severity (warn/block), weight, line number tracking
+- Category diversity bonus: multi-category findings signal coordinated attack
+- Passthrough-first on fetch failure: scan errors allow install with warning (never silent block)
+- Extension bridges to platform via localhost:18791/api — degrades gracefully when platform is offline
+- Build script generates valid PNG icons with raw PNG construction (CRC-32, zlib deflate) — no external deps
+
+### CLI
+- New `clawsentinel scan <skill-id>` command (v0.3.0)
+- CLI version bumped to 0.3.0
+
+---
+
 ## [0.2.0] — Sprint 2: ClawGuard Proxy Core
 
 ### Added
@@ -60,13 +102,6 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 ---
 
 ## Upcoming
-
-### [0.3.0] — Sprint 3: ClawHub Scanner
-- Pre-install skill static analysis
-- Shell, HTTP, obfuscation, and permission rule sets
-- `openclaw skill install` shim/interceptor
-- Continuous hash monitoring for installed skills
-- Chrome extension companion (ClawSentinel Guard)
 
 ### [0.4.0] — Sprint 4: ClawEye Dashboard
 - Next.js 14 real-time security dashboard

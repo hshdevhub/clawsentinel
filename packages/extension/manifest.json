@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "ClawSentinel Guard",
+  "version": "0.3.0",
+  "description": "Detects hidden prompt injection on webpages. Protects your AI agent from being hijacked by malicious content.",
+  "homepage_url": "https://clawsentinel.sh",
+
+  "icons": {
+    "16":  "icons/icon-grey-16.png",
+    "48":  "icons/icon-grey-48.png",
+    "128": "icons/icon-grey-128.png"
+  },
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-grey-16.png",
+      "48": "icons/icon-grey-48.png"
+    },
+    "default_title": "ClawSentinel Guard"
+  },
+
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/scanner.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://clawhub.ai/*", "https://www.clawhub.ai/*"],
+      "js": ["content/clawhub-badges.js"],
+      "css": ["content/scanner.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+
+  "host_permissions": [
+    "<all_urls>"
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["rules/injection-patterns.json", "icons/*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

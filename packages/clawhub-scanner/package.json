@@ -1,6 +1,6 @@
 {
   "name": "@clawsentinel/clawhub-scanner",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Pre-install skill scanner and supply chain protection — ClawSentinel Module 4",
   "license": "MIT",
   "author": "hshdevhub",
@@ -46,7 +46,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@clawsentinel/core": "^0.6.0",
+    "@clawsentinel/core": "^0.6.1",
     "better-sqlite3": "^9.4.0",
     "chokidar": "^3.6.0",
     "node-cron": "^3.0.3"

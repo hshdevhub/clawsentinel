@@ -5,7 +5,7 @@ import { taintTracker } from '../engines/taint-tracker.js';
 import { patternEngine } from '../engines/pattern-engine.js';
 import { semanticEngine } from '../engines/semantic-engine.js';
 import { riskScorer } from '../engines/risk-scorer.js';
-import { eventBus, moduleLogger } from '@clawsentinel/core';
+import { eventBus, moduleLogger, config } from '@clawsentinel/core';
 import crypto from 'crypto';
 
 const log = moduleLogger('clawguard:ws');
@@ -134,18 +134,76 @@ async function inspectInbound(
   // Pattern engine — synchronous, fast (<5ms)
   const patternResult = patternEngine.scan(frame.content);
 
-  // Semantic engine — async, only triggered above score gate to control LLM cost
-  let semanticResult = null;
-  if (patternResult.score > cfg.semanticScoreGate) {
-    semanticResult = await semanticEngine.analyze(frame.content);
-  }
-
-  const risk = riskScorer.compute(patternResult, semanticResult, {
+  // ── Semantic engine — passthrough-first guarantee ──────────────────────────
+  // If pattern score already exceeds block threshold → block immediately without LLM latency.
+  // If pattern score is in the warn range (semanticGate < score < blockThreshold) → pass the
+  // message through now and fire the LLM check async. If semantic analysis confirms an attack,
+  // we emit a retroactive alert event so ClawEye surfaces it.
+  // This ensures OpenClaw latency is never increased by LLM round-trips.
+  const riskContext = {
     isTainted: taint.isTainted,
     taintRiskLevel: taint.riskLevel,
     frameType: frame.type,
     contentLength: frame.content.length
-  });
+  };
+
+  if (patternResult.score >= cfg.blockThreshold) {
+    // Block synchronously — pattern alone is decisive, no LLM needed
+    const risk = riskScorer.compute(patternResult, null, riskContext);
+
+    // Monitor mode: alert but never block
+    const mode = config.load().clawguard.mode;
+    if (mode === 'monitor') {
+      log.warn('MONITOR MODE — would have blocked (passing through)', { score: risk.score, sessionId });
+      return { action: 'warn', score: risk.score, reason: `[monitor] ${risk.reason}` };
+    }
+
+    return { action: risk.action, score: risk.score, reason: risk.reason };
+  }
+
+  if (patternResult.score > cfg.semanticScoreGate) {
+    // Pattern score is in the suspicious-but-not-decisive range.
+    // Pass through immediately and verify asynchronously.
+    const risk = riskScorer.compute(patternResult, null, riskContext);
+
+    // Fire-and-forget: run LLM check after forwarding
+    setImmediate(() => {
+      semanticEngine.analyze(frame.content).then(semanticResult => {
+        const asyncRisk = riskScorer.compute(patternResult, semanticResult, riskContext);
+        if (asyncRisk.action === 'block' && semanticResult.isInjection) {
+          eventBus.emit('clawguard:semantic-confirm', {
+            source: 'clawguard',
+            severity: 'critical',
+            category: 'injection',
+            description: `Semantic engine confirmed injection (post-pass): ${semanticResult.reason}`,
+            sessionId,
+            payload: {
+              score: asyncRisk.score,
+              provider: semanticResult.provider,
+              confidence: semanticResult.confidence,
+              contentHash: crypto.createHash('sha256').update(raw).digest('hex').slice(0, 16)
+            }
+          });
+        }
+      }).catch(() => { /* semantic failure — already passed through, non-fatal */ });
+    });
+
+    // Monitor mode: already warn-or-pass, honour it
+    const mode = config.load().clawguard.mode;
+    if (mode === 'monitor' && risk.action === 'block') {
+      return { action: 'warn', score: risk.score, reason: `[monitor] ${risk.reason}` };
+    }
+
+    return { action: risk.action, score: risk.score, reason: risk.reason };
+  }
+
+  // Below semantic gate — pure pattern result
+  const risk = riskScorer.compute(patternResult, null, riskContext);
+
+  const mode = config.load().clawguard.mode;
+  if (mode === 'monitor' && risk.action === 'block') {
+    return { action: 'warn', score: risk.score, reason: `[monitor] ${risk.reason}` };
+  }
 
   return { action: risk.action, score: risk.score, reason: risk.reason };
 }

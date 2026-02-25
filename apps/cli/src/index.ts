@@ -10,13 +10,15 @@ import { disableCommand } from './commands/disable.js';
 import { vaultCommand } from './commands/vault.js';
 import { scanCommand } from './commands/scan.js';
 import { testCommand } from './commands/test.js';
+import { configCommand } from './commands/config.js';
+import { uninstallCommand } from './commands/uninstall.js';
 
 const program = new Command();
 
 program
   .name('clawsentinel')
   .description('The active security layer for OpenClaw — one install, five layers, complete protection.')
-  .version('0.6.0');
+  .version('0.6.1');
 
 program.addCommand(initCommand());
 program.addCommand(startCommand());
@@ -28,5 +30,7 @@ program.addCommand(disableCommand());
 program.addCommand(vaultCommand());
 program.addCommand(scanCommand());
 program.addCommand(testCommand());
+program.addCommand(configCommand());
+program.addCommand(uninstallCommand());
 
 program.parse();

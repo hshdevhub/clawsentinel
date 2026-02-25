@@ -1,0 +1,23 @@
+{
+  "name": "@clawsentinel/extension",
+  "version": "0.1.0",
+  "description": "ClawSentinel Guard — Chrome extension companion for the platform",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "dev": "node scripts/build.js --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.4.0",
+    "esbuild": "^0.20.0"
+  },
+  "notes": [
+    "Manifest V3 Chrome extension",
+    "Scans DOM for injection patterns on clawhub.ai",
+    "Bridges to ClawGuard local API at :18791",
+    "Shares pattern signatures with ClawGuard package",
+    "Sprint TBD — built alongside clawhub-scanner (Sprint 3)"
+  ]
+}

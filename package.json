@@ -1,0 +1,31 @@
+{
+  "name": "clawsentinel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The active security layer for OpenClaw — one install, five layers, complete protection.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "test": "turbo test",
+    "test:attack-suite": "vitest run tests/attack-suite",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "vitest": "^1.4.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

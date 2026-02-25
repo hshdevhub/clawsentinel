@@ -1,7 +1,33 @@
 {
   "name": "@clawsentinel/core",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "description": "Shared types, event bus, SQLite schema and logger for ClawSentinel",
+  "license": "MIT",
+  "author": "hshdevhub",
+  "homepage": "https://clawsentinel.sh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hshdevhub/clawsentinel.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "clawsentinel",
+    "openclaw",
+    "ai-security",
+    "prompt-injection",
+    "llm-security"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

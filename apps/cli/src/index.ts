@@ -16,7 +16,7 @@ const program = new Command();
 program
   .name('clawsentinel')
   .description('The active security layer for OpenClaw — one install, five layers, complete protection.')
-  .version('0.5.0');
+  .version('0.6.0');
 
 program.addCommand(initCommand());
 program.addCommand(startCommand());

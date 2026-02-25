@@ -1,7 +1,35 @@
 {
   "name": "@clawsentinel/clawguard",
-  "version": "0.1.0",
-  "description": "WebSocket + HTTP proxy with prompt injection firewall — ClawSentinel Module 3",
+  "version": "0.6.0",
+  "description": "WebSocket + HTTP proxy with 500-rule prompt injection firewall — ClawSentinel Module 3",
+  "license": "MIT",
+  "author": "hshdevhub",
+  "homepage": "https://clawsentinel.sh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hshdevhub/clawsentinel.git",
+    "directory": "packages/clawguard"
+  },
+  "keywords": [
+    "clawsentinel",
+    "openclaw",
+    "prompt-injection",
+    "ai-security",
+    "llm-firewall",
+    "websocket-proxy"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src/rules",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -12,8 +40,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@clawsentinel/core": "*",
-    "@clawsentinel/clawvault": "*",
+    "@clawsentinel/core": "^0.6.0",
+    "@clawsentinel/clawvault": "^0.6.0",
     "ws": "^8.16.0",
     "http-proxy-middleware": "^3.0.0",
     "@anthropic-ai/sdk": "^0.24.0",

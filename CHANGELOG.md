@@ -9,6 +9,39 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ---
 
+## [0.6.0] — Sprint 6: Launch Prep
+
+### Added
+- `SECURITY.md` — responsible disclosure policy, vulnerability reporting process, response timeline, scope, security architecture overview
+- `.env.example` (root) — documents all ClawSentinel environment variables with defaults
+- `packages/clawguard/.env.example` — ClawGuard-specific env vars (ports, upstream, semantic engine mode)
+- `packages/claweye/.env.example` — ClawEye dashboard env vars (port, DB path, SSE poll interval)
+
+### CLI
+- `clawsentinel init` — fully rewritten interactive setup wizard with ANSI colour output (cyan banners, green ✓, yellow ⚠), step progress `[1/4]`, DB initialisation step, version updated to 0.6.0
+- `clawsentinel status` — color-coded module health: ● green (running), ● red (error), ○ yellow (stopped), ○ grey (disabled); shows plan badge, timestamp, contextual hint (start vs logs vs error)
+- CLI version bumped to 0.6.0
+
+### npm Publish Config
+- All publishable packages updated with `publishConfig`, `files`, `repository`, `homepage`, `license`, `keywords`, `engines` fields ready for `npm publish`
+- Packages: `@clawsentinel/core`, `@clawsentinel/clawguard`, `@clawsentinel/clawvault`, `@clawsentinel/clawhub-scanner`, `clawsentinel` (CLI)
+- Internal workspace deps updated from `"*"` to `"^0.6.0"` for proper semver resolution on npm
+- `clawguard` `files` field includes `src/rules/` so the 500 JSON rule files are bundled with the package
+
+### README
+- Rewrote with full architecture diagram, 60-second install guide, threat coverage table, pattern engine detail (8 categories, 500 rules), CLI reference, attack test suite example output, BYOK provider priority list
+- Fixed rule count (500, not 1,247)
+- Added `clawsentinel test --attack-suite` to CLI reference
+
+### Version bumps
+- `@clawsentinel/core` 0.1.0 → 0.6.0
+- `@clawsentinel/clawguard` 0.1.0 → 0.6.0
+- `@clawsentinel/clawvault` 0.1.0 → 0.6.0
+- `@clawsentinel/clawhub-scanner` 0.3.0 → 0.6.0
+- `clawsentinel` CLI 0.5.0 → 0.6.0
+
+---
+
 ## [0.5.0] — Sprint 5: Semantic Engine + 500-Rule Pattern Library + Full Attack Suite
 
 ### Added
@@ -180,19 +213,9 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 
 ## Upcoming
 
-### [0.4.0] — Sprint 4: ClawEye Dashboard
-- Next.js 14 real-time security dashboard
-- Server-Sent Events for live event feed
-- Correlation engine: multi-step attack detection
-- Module health panel + security score
-
-### [0.5.0] — Sprint 5: Full Integration
-- 500+ pattern signatures
-- Full attack suite: T1–T7 threat model coverage
-- End-to-end integration tests
-
-### [1.0.0] — Sprint 6: Launch
-- `clawsentinel init` interactive wizard
-- npm publish @clawsentinel/core, @clawsentinel/cli
-- Standalone binary (pkg)
-- SECURITY.md responsible disclosure policy
+### [0.7.0] — Sprint 7: Subscriptions + Stripe
+- Free + Pro ($9/mo) plan gating
+- Stripe Checkout integration (`clawsentinel upgrade`)
+- ClawEye Pro-only gate with upgrade prompt overlay
+- 90-day log retention for Pro (7-day for Free)
+- Stripe Customer Portal for self-serve cancellation

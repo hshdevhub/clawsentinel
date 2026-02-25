@@ -10,3 +10,5 @@ build/
 *.log
 coverage/
 .next/
+*.crx
+*.zip

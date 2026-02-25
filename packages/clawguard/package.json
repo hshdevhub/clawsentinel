@@ -1,0 +1,59 @@
+{
+  "name": "@clawsentinel/clawguard",
+  "version": "0.6.1",
+  "description": "WebSocket + HTTP proxy with 500-rule prompt injection firewall — ClawSentinel Module 3",
+  "license": "MIT",
+  "author": "hshdevhub",
+  "homepage": "https://clawsentinel.sh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hshdevhub/clawsentinel.git",
+    "directory": "packages/clawguard"
+  },
+  "keywords": [
+    "clawsentinel",
+    "openclaw",
+    "prompt-injection",
+    "ai-security",
+    "llm-firewall",
+    "websocket-proxy"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src/rules",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clawsentinel/core": "^0.6.1",
+    "@clawsentinel/clawvault": "^0.6.1",
+    "ws": "^8.16.0",
+    "http-proxy-middleware": "^3.0.0",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "openai": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0",
+    "vitest": "^1.4.0"
+  }
+}

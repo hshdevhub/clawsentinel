@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawSentinel Guard</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+
+    <header>
+      <img src="../icons/icon-grey-48.png" id="logo" alt="ClawSentinel Guard" width="32" height="32">
+      <div class="header-text">
+        <h1>ClawSentinel Guard</h1>
+        <p id="hostname">Checking…</p>
+      </div>
+    </header>
+
+    <div id="risk-banner" class="banner-scanning">
+      <span id="risk-icon">⏳</span>
+      <span id="risk-label">Scanning page for injection payloads…</span>
+    </div>
+
+    <div id="findings-section" style="display:none">
+      <h2>Findings <span id="findings-count" class="count-badge"></span></h2>
+      <ul id="findings-list"></ul>
+    </div>
+
+    <div id="clean-section" style="display:none">
+      <div class="clean-msg">
+        <span class="clean-icon">✅</span>
+        <p>No injection patterns detected.<br>
+           <span class="clean-sub">Safe to share this page with your AI agent.</span>
+        </p>
+      </div>
+    </div>
+
+    <div id="error-section" style="display:none">
+      <p class="error-msg">Scan data unavailable.<br>Reload the page to run a fresh scan.</p>
+    </div>
+
+    <footer>
+      <a href="https://clawsentinel.sh" target="_blank" rel="noopener" class="footer-link">
+        ClawSentinel Platform →
+      </a>
+      <span id="platform-status" class="platform-status"></span>
+    </footer>
+
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

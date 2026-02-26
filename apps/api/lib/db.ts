@@ -19,10 +19,10 @@ let redis: Redis | null = null;
 
 function getRedis(): Redis {
   if (!redis) {
-    const url   = process.env['UPSTASH_REDIS_REST_URL'];
-    const token = process.env['UPSTASH_REDIS_REST_TOKEN'];
+    const url   = process.env['KV_REST_API_URL'];
+    const token = process.env['KV_REST_API_TOKEN'];
     if (!url || !token) {
-      throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set — connect Upstash in Vercel Dashboard → Storage');
+      throw new Error('KV_REST_API_URL and KV_REST_API_TOKEN must be set — connect Upstash in Vercel Dashboard → Storage');
     }
     redis = new Redis({ url, token });
   }

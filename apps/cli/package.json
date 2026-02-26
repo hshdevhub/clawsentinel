@@ -4,7 +4,7 @@
   "description": "The active security layer for OpenClaw — one install, five layers, complete protection",
   "license": "Elastic-2.0",
   "author": "hshdevhub",
-  "homepage": "https://clawsentinel.sh",
+  "homepage": "https://clawsentinel.dev",
   "repository": {
     "type": "git",
     "url": "https://github.com/hshdevhub/clawsentinel.git",

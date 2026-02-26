@@ -291,5 +291,5 @@ MIT — free to use, modify, and distribute.
 ---
 
 **Author:** [hshdevhub](https://github.com/hshdevhub)
-**Website:** [clawsentinel.sh](https://clawsentinel.sh)
+**Website:** [clawsentinel.dev](https://clawsentinel.dev)
 **npm:** [@clawsentinel/cli](https://www.npmjs.com/package/@clawsentinel/cli)

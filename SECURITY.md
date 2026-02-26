@@ -17,7 +17,7 @@
 Report security issues privately via one of:
 
 - **GitHub Security Advisories**: [Report a vulnerability](https://github.com/hshdevhub/clawsentinel/security/advisories/new) ← preferred
-- **Email**: security@clawsentinel.sh
+- **Email**: security@clawsentinel.dev
 
 ### What to include
 

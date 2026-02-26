@@ -3,7 +3,7 @@
   "name": "ClawSentinel Guard",
   "version": "0.3.0",
   "description": "Detects hidden prompt injection on webpages. Protects your AI agent from being hijacked by malicious content.",
-  "homepage_url": "https://clawsentinel.sh",
+  "homepage_url": "https://clawsentinel.dev",
 
   "icons": {
     "16":  "icons/icon-grey-16.png",

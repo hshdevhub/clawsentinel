@@ -4,7 +4,7 @@
   "description": "Encrypted credential vault for ClawSentinel — AES-256-GCM + OS keychain",
   "license": "Elastic-2.0",
   "author": "hshdevhub",
-  "homepage": "https://clawsentinel.sh",
+  "homepage": "https://clawsentinel.dev",
   "repository": {
     "type": "git",
     "url": "https://github.com/hshdevhub/clawsentinel.git",

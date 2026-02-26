@@ -47,8 +47,7 @@ export async function sendActivationEmail(email: string, refreshToken: string): 
       <ul style="color: #d1d5db; font-size: 13px; margin: 0; padding-left: 18px; line-height: 2;">
         <li>Semantic engine — LLM-assisted injection detection</li>
         <li>ClawEye correlation engine — multi-layer attack detection</li>
-        <li>Telegram + desktop alerts</li>
-        <li>ClawBox Docker hardening</li>
+        <li>Silent background renewal — licence auto-renews every 23h</li>
       </ul>
     </div>
 

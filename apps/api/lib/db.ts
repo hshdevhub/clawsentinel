@@ -1,6 +1,7 @@
 // ClawSentinel API — Database abstraction
-// Uses Upstash Redis (HTTP-based, works on Vercel serverless + locally)
+// Uses Vercel KV (powered by Upstash Redis — HTTP-based, works on Vercel serverless + locally)
 // All env vars come from Vercel Environment Variables — never hardcoded
+// Setup: Vercel Dashboard → Storage → Create KV Store → env vars auto-populate
 
 import { Redis } from '@upstash/redis';
 
@@ -18,10 +19,10 @@ let redis: Redis | null = null;
 
 function getRedis(): Redis {
   if (!redis) {
-    const url   = process.env['UPSTASH_REDIS_REST_URL'];
-    const token = process.env['UPSTASH_REDIS_REST_TOKEN'];
+    const url   = process.env['KV_REST_API_URL'];
+    const token = process.env['KV_REST_API_TOKEN'];
     if (!url || !token) {
-      throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set in Vercel Environment Variables');
+      throw new Error('KV_REST_API_URL and KV_REST_API_TOKEN must be set — connect a Vercel KV store in the Vercel Dashboard');
     }
     redis = new Redis({ url, token });
   }

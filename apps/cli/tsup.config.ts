@@ -5,8 +5,5 @@ export default defineConfig({
   format: ['cjs'],
   outExtension: () => ({ js: '.cjs' }),
   dts: true,
-  clean: true,
-  banner: {
-    js: '#!/usr/bin/env node'
-  }
+  clean: true
 });

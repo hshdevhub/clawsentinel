@@ -127,7 +127,7 @@ export class SkillWatcher {
       const verifyResult = hashVerifier.verify(skillId, filePath);
       if (verifyResult.status === 'tampered') {
         eventBus.emit('clawhub:tamper-detected', {
-          source: 'clawhub-scanner',
+          source: 'clawhub',
           severity: 'critical',
           category: 'supply_chain',
           description: `Skill "${skillId}" was modified after install — possible supply chain attack`,
@@ -174,7 +174,7 @@ export class SkillWatcher {
     // Emit events based on verdict
     if (result.verdict === 'block') {
       eventBus.emit('clawhub:skill-blocked', {
-        source: 'clawhub-scanner',
+        source: 'clawhub',
         severity: 'block',
         category: 'supply_chain',
         description: `Malicious skill detected: "${skillId}" (score ${result.score}/100)`,
@@ -186,7 +186,7 @@ export class SkillWatcher {
       });
     } else if (result.verdict === 'warn') {
       eventBus.emit('clawhub:skill-warn', {
-        source: 'clawhub-scanner',
+        source: 'clawhub',
         severity: 'warn',
         category: 'supply_chain',
         description: `Suspicious skill: "${skillId}" (score ${result.score}/100)`,

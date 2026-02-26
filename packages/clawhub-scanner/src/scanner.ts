@@ -129,7 +129,7 @@ export class SkillScanner {
 
     const result: ScanResult = {
       skillId,
-      skillName: options.skillName,
+      ...(options.skillName !== undefined ? { skillName: options.skillName } : {}),
       score,
       riskScore: Math.min(100, adjustedRaw),
       verdict,

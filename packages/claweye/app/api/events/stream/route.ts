@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
 import os from 'os';
-import { getCorrelationEngine } from '../../../../src/correlation.js';
+import { getCorrelationEngine } from '../../../../src/correlation';
 import { isPro } from '@clawsentinel/core';
 
 export const runtime = 'nodejs';

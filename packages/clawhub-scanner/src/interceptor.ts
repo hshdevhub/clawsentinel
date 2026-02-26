@@ -41,7 +41,7 @@ export class InstallInterceptor {
         });
         // Cannot scan what we cannot fetch — allow with warn event
         eventBus.emit('clawhub:scan-failed', {
-          source: 'clawhub-scanner',
+          source: 'clawhub',
           severity: 'warn',
           category: 'supply_chain',
           description: `Could not fetch source for skill "${skillId}" — pre-install scan skipped`,
@@ -90,7 +90,7 @@ export class InstallInterceptor {
         });
 
         eventBus.emit('clawhub:install-warned', {
-          source: 'clawhub-scanner',
+          source: 'clawhub',
           severity: 'warn',
           category: 'supply_chain',
           description: `Skill "${skillId}" has suspicious patterns — user confirmation required`,
@@ -107,7 +107,7 @@ export class InstallInterceptor {
         });
 
         eventBus.emit('clawhub:install-blocked', {
-          source: 'clawhub-scanner',
+          source: 'clawhub',
           severity: 'block',
           category: 'supply_chain',
           description: `Malicious skill install blocked: "${skillId}" (score ${scanResult.score}/100)`,

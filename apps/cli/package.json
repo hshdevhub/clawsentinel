@@ -36,7 +36,7 @@
   },
   "main": "./dist/index.cjs",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs --dts --clean --banner.js '#!/usr/bin/env node'",
+    "build": "tsup",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

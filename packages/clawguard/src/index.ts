@@ -78,8 +78,9 @@ async function renewPlanIfNeeded(): Promise<void> {
       writePlan({ ...plan, access_token: body.access_token });
       log.info('Pro plan renewed silently');
     } else {
-      // Server returned { plan: 'free' } — subscription cancelled
-      writePlan({ ...plan, plan: 'free', access_token: undefined });
+      // Server returned { plan: 'free' } — subscription cancelled; drop access_token
+      const { access_token: _tok, ...planWithoutToken } = plan;
+      writePlan({ ...planWithoutToken, plan: 'free' });
       log.info('Subscription cancelled — plan downgraded to Free');
     }
   } catch (err) {

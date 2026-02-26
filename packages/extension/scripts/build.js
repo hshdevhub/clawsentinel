@@ -74,6 +74,9 @@ const COLORS = {
 
 const SIZES = [16, 48, 128];
 
+// Must be declared before createSolidColorPNG is called (ESM TDZ)
+let _crcTable = null;
+
 for (const [color, [r, g, b]] of Object.entries(COLORS)) {
   for (const size of SIZES) {
     const filename = `icon-${color}-${size}.png`;
@@ -142,7 +145,6 @@ function crc32(buf) {
   return (crc ^ 0xFFFFFFFF) | 0;
 }
 
-let _crcTable = null;
 function makeCrcTable() {
   if (_crcTable) return _crcTable;
   _crcTable = new Int32Array(256);

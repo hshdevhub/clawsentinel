@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "ClawSentinel Guard — Chrome extension companion for the platform",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
     "dev": "node scripts/build.js --watch",

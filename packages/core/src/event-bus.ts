@@ -11,7 +11,7 @@ class ClawSentinelEventBus extends EventEmitter {
     this.setMaxListeners(50);
   }
 
-  emit(eventName: string, data: PartialEvent): boolean {
+  override emit(eventName: string, data: PartialEvent): boolean {
     const fullEvent: ClawSentinelEvent = {
       id: data.id ?? randomUUID(),
       timestamp: data.timestamp ?? new Date().toISOString(),

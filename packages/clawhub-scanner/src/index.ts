@@ -7,6 +7,7 @@ export type { ScanResult, ScanFinding } from './scanner.js';
 export { HashVerifier, hashVerifier } from './hash-verifier.js';
 export type { VerifyResult } from './hash-verifier.js';
 
+import { skillWatcher } from './watcher.js';
 export { SkillWatcher, skillWatcher } from './watcher.js';
 export type { WatcherStats } from './watcher.js';
 

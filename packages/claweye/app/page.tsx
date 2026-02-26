@@ -1,8 +1,8 @@
-import { EventFeed }          from './components/EventFeed.js';
-import { LayerStatus }         from './components/LayerStatus.js';
-import { SecurityScore }        from './components/SecurityScore.js';
-import { CorrelationAlerts }    from './components/CorrelationAlerts.js';
-import { StatsBar }             from './components/StatsBar.js';
+import { EventFeed }          from './components/EventFeed';
+import { LayerStatus }         from './components/LayerStatus';
+import { SecurityScore }        from './components/SecurityScore';
+import { CorrelationAlerts }    from './components/CorrelationAlerts';
+import { StatsBar }             from './components/StatsBar';
 
 export default function DashboardPage() {
   return (

@@ -86,7 +86,7 @@ export const OBFUSCATION_PATTERNS: ScanRule[] = [
   },
   {
     id: 'OBF011',
-    pattern: /\[\s*(['"`])[^\1]+\1\s*\]\s*\[/,
+    pattern: /\[\s*(['"`])[^'"`]+\1\s*\]\s*\[/,
     weight: 4,
     category: 'obfuscation',
     description: 'Bracket notation property access — property name hiding',

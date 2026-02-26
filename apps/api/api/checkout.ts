@@ -29,8 +29,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       subscription_data: {
         trial_period_days: 7
       },
-      // Collect email so webhook can send the activation key
-      customer_creation: 'always',
       success_url: `${baseUrl}/api/checkout/success`,
       cancel_url:  `${baseUrl}/api/checkout/cancel`
     });

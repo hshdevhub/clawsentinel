@@ -2,7 +2,7 @@ import http from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { resolveVaultRefs, detectRawKeys } from '@clawsentinel/clawvault';
 import { patternEngine } from '../engines/pattern-engine.js';
-import { eventBus, moduleLogger } from '@clawsentinel/core';
+import { eventBus, moduleLogger, config } from '@clawsentinel/core';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -36,7 +36,7 @@ export function startHTTPProxy(): http.Server {
       res.end(JSON.stringify({
         status: 'ok',
         module: 'clawguard',
-        version: '0.3.0',
+        version: '0.7.0',
         rules: patternEngine.getRuleCount(),
         upstreamHttp: UPSTREAM_HTTP
       }));
@@ -216,7 +216,8 @@ function interceptToolCall(req: http.IncomingMessage, res: http.ServerResponse):
 
     // ── 7. Pattern scan on injection via tool input ───────────────────────
     const patternResult = patternEngine.scan(toolInput);
-    if (patternResult.score >= 71) {
+    const blockThreshold = config.load().clawguard.blockThreshold;
+    if (patternResult.score >= blockThreshold) {
       log.warn(`Tool input blocked by pattern engine (score ${patternResult.score})`);
       res.writeHead(403, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({

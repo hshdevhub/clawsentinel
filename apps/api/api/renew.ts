@@ -30,9 +30,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  // Machine ID mismatch: someone activated on a different machine
-  // The new machine "wins" — update to it (one active machine at a time)
+  // Machine ID mismatch: token was activated on a different machine.
+  // Log the migration so it's visible in Vercel logs, then update.
   if (customer.machine_id && customer.machine_id !== machine_id) {
+    console.log(`machine_id migration: ${customer.machine_id.slice(0, 8)}… → ${machine_id.slice(0, 8)}… (${customer.email})`);
     await db.updateMachineId(refresh_token, machine_id);
   }
 

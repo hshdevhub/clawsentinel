@@ -4,7 +4,7 @@ import { config, getDb, moduleLogger } from '@clawsentinel/core';
 
 const log = moduleLogger('cli:init');
 
-const VERSION = '0.6.0';
+const VERSION = '0.7.0';
 
 // ANSI colour helpers (inline to avoid ESM-only chalk import complexity in CJS bundle)
 const c = {
@@ -104,7 +104,7 @@ export function initCommand(): Command {
         log.warn('DB init error', { err });
       }
 
-      config.set('version', VERSION);
+      config.set('version', '0.7.0');
       config.set('initialised', true);
 
       // Done

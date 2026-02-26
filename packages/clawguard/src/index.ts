@@ -1,4 +1,4 @@
-// ClawGuard — Process Entry Point (v0.6.0)
+// ClawGuard — Process Entry Point (v0.7.0)
 // Starts the WebSocket proxy, HTTP proxy, and ClawHub skill watcher.
 // Run via: node dist/index.js
 // Spawned by: clawsentinel start
@@ -10,6 +10,7 @@ import { eventBus, moduleLogger, getDb, readPlan, writePlan, getMachineId, hours
 import { startWSProxy } from './proxy/ws-proxy.js';
 import { startHTTPProxy } from './proxy/http-proxy.js';
 import { startClawHubScanner } from '@clawsentinel/clawhub-scanner';
+import { taintTracker } from './engines/taint-tracker.js';
 
 export const CLAWGUARD_VERSION = '0.7.0';
 
@@ -91,7 +92,7 @@ async function main() {
   writePid();
 
   // Initialise event bus (persists events to SQLite)
-  eventBus.enable();
+  eventBus.enablePersistence();
   markStatus('running');
 
   // Start the WebSocket proxy (:18790 → :18789)
@@ -114,6 +115,10 @@ async function main() {
   }
 
   log.info('ClawGuard ready — passthrough-first guarantee active');
+
+  // ── Taint tracker cleanup (prevents memory leak over long sessions) ────────
+  // Prunes session taint records older than 1 hour — runs every hour
+  setInterval(() => taintTracker.pruneStaleRecords(), 60 * 60 * 1000).unref();
 
   // ── Background plan renewal (Pro only) ────────────────────────────────────
   // Check immediately on startup (covers the case where ClawGuard was offline

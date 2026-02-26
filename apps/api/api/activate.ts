@@ -27,6 +27,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
+  // machine_id must be a 32-char hex string (SHA256[:32] from getMachineId())
+  if (!/^[a-f0-9]{32}$/.test(machine_id)) {
+    res.status(400).json({ error: 'Invalid machine_id format' });
+    return;
+  }
+
   const customer = await db.getByToken(refresh_token);
 
   if (!customer) {

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { vault } from '@clawsentinel/clawvault';
-import { moduleLogger } from '@clawsentinel/core';
+import { moduleLogger, isPro } from '@clawsentinel/core';
 import type { SemanticResult } from './risk-scorer.js';
 
 const log = moduleLogger('clawguard:semantic');
@@ -40,6 +40,7 @@ export class SemanticEngine {
 
   async analyze(content: string): Promise<SemanticResult | null> {
     if (!this.enabled) return null;
+    if (!isPro()) return null; // Semantic engine is a Pro-only feature
 
     const provider = await this.detectProvider();
     if (provider === 'none') return null;

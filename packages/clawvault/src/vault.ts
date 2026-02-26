@@ -114,8 +114,19 @@ export class ClawVault {
 
     // Endpoint allowlist check — CRITICAL security gate
     // A compromised skill cannot receive a credential for an endpoint not in the allowlist
+    // Uses hostname comparison (not prefix) to block attacks like api.anthropic.com.evil.com
     const allowed: string[] = JSON.parse(row.allowed_endpoints) as string[];
-    const isAllowed = allowed.some(ep => targetEndpoint.startsWith(ep));
+    const isAllowed = allowed.some(ep => {
+      try {
+        const allowedUrl = new URL(ep);
+        const targetUrl  = new URL(targetEndpoint);
+        return targetUrl.protocol === allowedUrl.protocol &&
+               targetUrl.hostname  === allowedUrl.hostname;
+      } catch {
+        // Malformed URL in allowlist — fall back to exact prefix match
+        return targetEndpoint.startsWith(ep);
+      }
+    });
 
     if (!isAllowed) {
       log.warn(`Credential denied: "${name}" requested by non-allowlisted endpoint`, {

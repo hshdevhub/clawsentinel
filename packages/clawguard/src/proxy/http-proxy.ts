@@ -3,11 +3,11 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import { resolveVaultRefs, detectRawKeys } from '@clawsentinel/clawvault';
 import { patternEngine } from '../engines/pattern-engine.js';
 import { eventBus, moduleLogger, config } from '@clawsentinel/core';
-import { createRequire } from 'module';
+import _toolBlocklist from '../rules/tool-blocklist.json';
+import _domainAllowlist from '../rules/domain-allowlist.json';
 
-const require = createRequire(import.meta.url);
-const toolBlocklist = require('../rules/tool-blocklist.json') as ToolBlocklist;
-const domainAllowlist = require('../rules/domain-allowlist.json') as DomainAllowlist;
+const toolBlocklist = _toolBlocklist as unknown as ToolBlocklist;
+const domainAllowlist = _domainAllowlist as unknown as DomainAllowlist;
 
 const log = moduleLogger('clawguard:http');
 

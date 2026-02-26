@@ -50,13 +50,19 @@ export async function GET() {
 
   const dbMap = new Map(dbStatuses.map(s => [s.name, s]));
 
+  // ClawVault and ClawHub Scanner run inside the ClawGuard process.
+  // They have no independent health endpoint — infer from ClawGuard's status.
+  const guardRunning = clawguardHealth === 'online';
+  const inProcessStatus = guardRunning ? 'running' : 'stopped';
+
   const modules = [
     {
       name: 'clawbox',
       label: 'ClawBox',
       description: 'Hardened Docker deployment',
       icon: '🐳',
-      status: dbMap.get('clawbox')?.status ?? 'unknown',
+      // ClawBox requires explicit Docker setup — disabled until configured
+      status: dbMap.get('clawbox')?.status ?? 'disabled',
       port: null
     },
     {
@@ -64,7 +70,7 @@ export async function GET() {
       label: 'ClawVault',
       description: 'Encrypted credential store',
       icon: '🔐',
-      status: dbMap.get('clawvault')?.status ?? 'unknown',
+      status: inProcessStatus,
       port: null
     },
     {
@@ -72,7 +78,7 @@ export async function GET() {
       label: 'ClawGuard',
       description: 'WebSocket + HTTP proxy',
       icon: '🛡️',
-      status: clawguardHealth === 'online' ? 'running' : (dbMap.get('clawguard')?.status ?? 'stopped'),
+      status: guardRunning ? 'running' : (dbMap.get('clawguard')?.status ?? 'stopped'),
       port: 18790,
       healthUrl: 'http://localhost:18791/health'
     },
@@ -81,7 +87,7 @@ export async function GET() {
       label: 'ClawHub Scanner',
       description: 'Supply chain protection',
       icon: '🔍',
-      status: dbMap.get('clawhub-scanner')?.status ?? 'unknown',
+      status: inProcessStatus,
       port: null
     },
     {

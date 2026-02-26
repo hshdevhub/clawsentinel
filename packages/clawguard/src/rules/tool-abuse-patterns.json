@@ -1,1 +1,450 @@
-[{"id":"TOOL001","pattern":"(call|invoke|use|execute|run)\\s+(the\\s+)?(file|filesystem|fs|read_file|write_file|delete_file)\\s+(tool|function|api).{0,60}(ssh|aws|credential|secret|password|id_rsa|\\.env)","weight":10,"category":"filesystem_abuse","description":"T5: File system tool called on credential files"},{"id":"TOOL002","pattern":"(use|invoke|call)\\s+(the\\s+)?(bash|shell|terminal|cmd|command\\s+line|execute)\\s+(tool|function|api).{0,80}(curl|wget|nc|netcat|python\\s+-c|eval|exec)","weight":10,"category":"shell_abuse","description":"T5: Shell execution tool with network/exec command"},{"id":"TOOL003","pattern":"(use|invoke|call|trigger)\\s+(the\\s+)?(web|browser|scrape|fetch|http|request)\\s+(tool|function|api|plugin).{0,100}(exfil|steal|leak|send|forward|post)\\s+(data|keys?|tokens?|secrets?)","weight":10,"category":"network_tool_abuse","description":"T5: Web/fetch tool weaponized for exfiltration"},{"id":"TOOL004","pattern":"(use\\s+the\\s+)?(computer\\s+use|screen\\s+reader|screenshot|desktop|ui\\s+automation)\\s+(tool|capability|function).{0,80}(password|credential|secret|key|token)","weight":9,"category":"computer_use_abuse","description":"T5: Computer use tool targeting sensitive UI fields"},{"id":"TOOL005","pattern":"(list|enumerate|read|scan)\\s+(all\\s+)?(available\\s+)?(tools?|functions?|capabilities?|plugins?|mcps?).{0,60}(and\\s+)?(report|send|exfil|forward)","weight":9,"category":"tool_reconnaissance","description":"T5: Enumerating available tools for reconnaissance"},{"id":"TOOL006","pattern":"(invoke|call|trigger)\\s+(multiple\\s+|all\\s+)?(tools?|functions?|capabilities?).{0,60}(simultaneously|at\\s+once|in\\s+parallel|together|concurrently)","weight":7,"category":"tool_chaining","description":"T5: Parallel tool invocation — possible coordinated attack"},{"id":"TOOL007","pattern":"(use|call|invoke)\\s+(the\\s+)?(database|db|sql|query)\\s+(tool|connector|function|api).{0,80}(drop|delete|truncate|alter|grant|insert\\s+into|update\\s+set)","weight":10,"category":"database_abuse","description":"T5: Database tool with destructive SQL operation"},{"id":"TOOL008","pattern":"(use\\s+the\\s+)?(email|mail|smtp|send\\s+email|gmail|outlook)\\s+(tool|function|api|plugin).{0,80}(all\\s+emails|inbox|contacts|credentials?|auth\\s+token)","weight":9,"category":"email_tool_abuse","description":"T5: Email tool accessing sensitive data or all messages"},{"id":"TOOL009","pattern":"(call|invoke|use)\\s+(the\\s+)?(code|python|javascript|js|typescript|interpreter|repl|sandbox)\\s+(tool|executor|runner|function).{0,80}(os\\.system|subprocess|exec|spawn|eval|__import__)","weight":10,"category":"code_execution_abuse","description":"T5: Code execution tool with system command escape"},{"id":"TOOL010","pattern":"(use\\s+the\\s+)?calendar\\s+(tool|api|function|plugin).{0,80}(read\\s+all|export|dump|list\\s+all|get\\s+all)\\s+(events?|meetings?|appointments?|invites?)","weight":7,"category":"calendar_abuse","description":"T5: Calendar tool for bulk data harvesting"},{"id":"TOOL011","pattern":"(trigger|call|invoke|use)\\s+(the\\s+)?(webhook|callback|notification|alert|trigger)\\s+(tool|function|endpoint|url).{0,100}https?://(?!api\\.anthropic\\.com|api\\.openai\\.com)","weight":9,"category":"network_tool_abuse","description":"T5: Webhook/callback tool pointing to external endpoint"},{"id":"TOOL012","pattern":"(use\\s+the\\s+)?(file|directory|folder|path)\\s+(search|find|list|enumerate|walk|glob)\\s+(tool|function).{0,80}(credential|secret|key|password|ssh|aws|token|\\.env)","weight":9,"category":"filesystem_abuse","description":"T5: File search tool targeting credential locations"},{"id":"TOOL013","pattern":"(copy|move|rename|symlink|hardlink)\\s+(file|directory).{0,80}(to|into).{0,60}(/tmp|/var/tmp|/dev/shm|~/.cache|public|www|upload)","weight":8,"category":"filesystem_abuse","description":"T5: Moving sensitive files to accessible location for exfil"},{"id":"TOOL014","pattern":"(create|make|write)\\s+(a\\s+)?(new\\s+)?(file|script|executable|binary|program).{0,60}(chmod|chown|execute|run|sudo)","weight":8,"category":"filesystem_abuse","description":"T5: Creating and chmod-ing executable file"},{"id":"TOOL015","pattern":"(use|call|invoke)\\s+(the\\s+)?(git|version\\s+control|svn|hg|repository)\\s+(tool|function|api).{0,80}(push|commit|clone|remote|add\\s+remote|set-url)\\s+.{0,80}https?://","weight":9,"category":"version_control_abuse","description":"T5: Git tool with push to external repository"},{"id":"TOOL016","pattern":"(use|call|invoke)\\s+(the\\s+)?(slack|discord|teams|telegram|signal|whatsapp|sms)\\s+(tool|api|function|bot|webhook).{0,80}(all\\s+messages?|history|export|dump|credentials?)","weight":9,"category":"communication_tool_abuse","description":"T5: Messaging platform tool for data theft"},{"id":"TOOL017","pattern":"(use|call|invoke)\\s+(the\\s+)?(clipboard|pasteboard|copy|paste)\\s+(tool|api|function).{0,80}(api\\s+key|password|token|secret|credential)","weight":9,"category":"clipboard_abuse","description":"T5: Clipboard tool targeting copied credentials"},{"id":"TOOL018","pattern":"(use|call|invoke)\\s+(the\\s+)?(environment|env|process\\.env|system\\s+vars?)\\s+(tool|reader|function|api).{0,60}(all|dump|list|export|serialize)","weight":9,"category":"environment_abuse","description":"T5: Environment reader tool dumping all variables"},{"id":"TOOL019","pattern":"(use|call|invoke)\\s+(the\\s+)?(docker|container|kubectl|kubernetes|k8s|pod)\\s+(tool|api|function|cli).{0,80}(exec|run|shell|bash|sh|cmd|secret|configmap)","weight":9,"category":"container_abuse","description":"T5: Container orchestration tool for shell escape or secret access"},{"id":"TOOL020","pattern":"(use|call|invoke)\\s+(the\\s+)?(aws|azure|gcp|cloud|s3|bucket|iam|role|sts)\\s+(tool|sdk|api|function|cli).{0,80}(credentials?|assume|role|token|secret\\s+access\\s+key|get-credentials)","weight":10,"category":"cloud_credential_abuse","description":"T5: Cloud SDK tool targeting IAM credentials or role assumption"},{"id":"TOOL021","pattern":"(call|invoke|trigger)\\s+(the\\s+)?(http|rest|api|request|fetch|axios|got)\\s+(tool|client|function).{0,60}(method\\s*:\\s*['\"]?POST|data\\s*:|body\\s*:).{0,100}(key|token|secret|credential|password)","weight":9,"category":"network_tool_abuse","description":"T5: HTTP client tool POSTing credentials to external endpoint"},{"id":"TOOL022","pattern":"(chain|pipe|combine|sequence|compose|orchestrate).{0,50}(tools?|functions?|capabilities?).{0,80}(extract|collect|gather|harvest|steal|exfil)","weight":9,"category":"tool_chaining","description":"T5: Tool chaining pattern for multi-step data theft"},{"id":"TOOL023","pattern":"(use|call|invoke)\\s+(the\\s+)?(keychain|keystore|secret\\s+manager|vault|password\\s+manager)\\s+(tool|api|function).{0,60}(get|read|fetch|retrieve|list|dump|export)","weight":10,"category":"vault_tool_abuse","description":"T5: Vault/keychain tool for credential extraction"},{"id":"TOOL024","pattern":"(disable|bypass|skip|suppress|mute)\\s+(the\\s+)?(tool|function|api)\\s+(validation|check|guard|filter|monitor|log|audit)","weight":9,"category":"tool_evasion","description":"T5: Attempting to disable tool-level security monitoring"},{"id":"TOOL025","pattern":"(register|add|install|load|enable)\\s+(a\\s+)?(new\\s+|custom\\s+|third.party\\s+|malicious\\s+)?(tool|plugin|extension|mcp|function|capability)","weight":8,"category":"tool_installation","description":"T5: Installing unauthorized new tools or MCP servers"},{"id":"TOOL026","pattern":"(intercept|hook|proxy|wrap|monkey.?patch)\\s+(the\\s+)?(tool|function|api|capability|call|request|response)","weight":9,"category":"tool_hijack","description":"T5: Hooking/intercepting tool calls for tampering"},{"id":"TOOL027","pattern":"(modify|alter|override|replace|swap\\s+out)\\s+(the\\s+)?(tool|function|api|plugin)\\s+(definition|schema|configuration|implementation|handler)","weight":9,"category":"tool_hijack","description":"T5: Replacing tool implementation with malicious version"},{"id":"TOOL028","pattern":"(log|record|capture|monitor|intercept).{0,40}(all|every|each).{0,30}(tool\\s+call|function\\s+call|api\\s+call|capability\\s+invocation).{0,60}(and\\s+)?(send|forward|exfil|report)","weight":10,"category":"tool_hijack","description":"T5: Intercepting all tool calls for exfiltration"},{"id":"TOOL029","pattern":"(add|include|attach|append)\\s+(to|in)\\s+(every|all|each)\\s+(tool\\s+call|function\\s+call|api\\s+request).{0,60}(header|parameter|field|payload)\\s*.{0,30}(key|token|credential|secret)","weight":10,"category":"tool_hijack","description":"T5: Appending credentials to all outgoing tool calls"},{"id":"TOOL030","pattern":"(use|invoke|call)\\s+(the\\s+)?(browser|puppeteer|playwright|selenium|webdriver)\\s+(tool|automation|function).{0,80}(navigate|go\\s+to|open).{0,80}https?://(?!api\\.anthropic\\.com|api\\.openai\\.com|clawhub\\.ai|openclaw\\.ai)","weight":8,"category":"browser_abuse","description":"T5: Browser automation navigating to untrusted URL"},{"id":"TOOL031","pattern":"(use|invoke|call)\\s+(the\\s+)?(browser|puppeteer|playwright)\\s+(tool|automation).{0,80}(type|fill|input|enter).{0,60}(username|password|credential|api\\s+key|token)","weight":10,"category":"browser_abuse","description":"T5: Browser automation typing credentials into forms"},{"id":"TOOL032","pattern":"(use|invoke|call)\\s+(the\\s+)?(ocr|image\\s+recognition|vision|screen\\s+capture|screenshot)\\s+(tool|function|api).{0,80}(password|credential|pin|code|secret|key)","weight":9,"category":"computer_use_abuse","description":"T5: Vision/OCR tool used to extract visible credentials"},{"id":"TOOL033","pattern":"(send|invoke|trigger|call).{0,40}(outbound|external|remote)\\s+(request|http|api\\s+call|tool\\s+call|webhook).{0,80}(from\\s+within|during|inside)\\s+(tool|function|execution|sandbox)","weight":8,"category":"sandbox_escape","description":"T5: Making external calls from within sandboxed tool execution"},{"id":"TOOL034","pattern":"(read|open|access|load)\\s+(the\\s+)?(config|configuration|settings?|preferences?)\\s+(file|json|yaml|toml|ini).{0,60}(api_key|secret|password|token|credential)","weight":9,"category":"filesystem_abuse","description":"T5: Reading configuration files containing credentials"},{"id":"TOOL035","pattern":"(use\\s+the\\s+)?(terminal|shell|bash|zsh|powershell|cmd)\\s+(tool|function|api).{0,80}(history|~\\/\\.bash_history|~\\/\\.zsh_history|~\\/\\.history)","weight":8,"category":"shell_abuse","description":"T5: Shell tool accessing command history for credential harvesting"},{"id":"TOOL036","pattern":"(use\\s+the\\s+)?(note|notes|notion|obsidian|evernote|onenote|confluence|wiki)\\s+(tool|plugin|api).{0,80}(all\\s+notes?|export|dump|read\\s+all|search\\s+everything).{0,60}(credential|password|secret|api\\s+key|token)","weight":8,"category":"notes_tool_abuse","description":"T5: Notes/wiki tool searching for embedded credentials"},{"id":"TOOL037","pattern":"(add|install|register|enable)\\s+(new|custom|additional|external|third.party|unknown|untrusted)\\s+(mcp|model\\s+context\\s+protocol|tool\\s+server|function\\s+server|plugin\\s+server)","weight":9,"category":"tool_installation","description":"T5: Installing new MCP server or tool provider"},{"id":"TOOL038","pattern":"(call|invoke|use)\\s+(the\\s+)?(search|web\\s+search|google|bing|ddg|duckduckgo)\\s+(tool|function|api).{0,80}(my\\s+name|email|address|phone|personal\\s+info|credential|doxx)","weight":8,"category":"osint_abuse","description":"T5: Search tool for personal info or doxxing"},{"id":"TOOL039","pattern":"(use|invoke|call)\\s+(the\\s+)?(code\\s+review|linting|analysis|static\\s+analysis)\\s+(tool|function).{0,80}(exfil|send|forward|upload|post)\\s+(the\\s+)?(code|findings?|results?)\\s+(to|at)\\s+https?://","weight":8,"category":"tool_hijack","description":"T5: Code analysis tool exfiltrating code to external URL"},{"id":"TOOL040","pattern":"(modify|alter|change|rewrite|patch)\\s+(the\\s+)?(tool\\s+description|function\\s+schema|openapi\\s+spec|api\\s+spec|capability\\s+definition)\\s+(to\\s+include|to\\s+allow|to\\s+add|to\\s+enable)","weight":9,"category":"tool_hijack","description":"T5: Modifying tool schema to add unauthorized capabilities"},{"id":"TOOL041","pattern":"(use\\s+the\\s+)?(spreadsheet|excel|sheets|csv|airtable)\\s+(tool|plugin|api).{0,80}(all\\s+data|entire\\s+sheet|export\\s+all|dump).{0,60}(and\\s+)?(send|forward|exfil|upload)","weight":8,"category":"data_tool_abuse","description":"T5: Spreadsheet tool bulk-exporting data"},{"id":"TOOL042","pattern":"(read|access|query)\\s+(all|every|the\\s+entire)\\s+(database|table|collection|bucket|store|index)\\s+(and\\s+)?(send|forward|exfil|upload|post)","weight":9,"category":"database_abuse","description":"T5: Full database dump and exfiltration"},{"id":"TOOL043","pattern":"(use|call|invoke)\\s+(the\\s+)?(payment|stripe|paypal|billing|checkout|invoice)\\s+(tool|api|function).{0,80}(transfer|send|charge|withdraw|redirect)\\s+(funds?|money|payment|balance|amount)\\s+(to|at)","weight":10,"category":"payment_abuse","description":"T5: Payment tool for financial fraud"},{"id":"TOOL044","pattern":"(use\\s+the\\s+)?(admin|management|control\\s+panel|dashboard|cms|backoffice)\\s+(tool|api|function).{0,80}(create|add|grant|elevate).{0,60}(admin|root|superuser|privileged)\\s+(user|account|access|role)","weight":10,"category":"privilege_escalation","description":"T5: Admin tool used to create privileged user"},{"id":"TOOL045","pattern":"(bypass|skip|disable|suppress)\\s+(the\\s+)?(rate\\s+limit|throttle|quota|token\\s+limit|request\\s+limit|api\\s+limit|abuse\\s+detection)\\s+(for|on|when\\s+calling|during)\\s+(this|the\\s+tool|the\\s+api|this\\s+call)","weight":8,"category":"tool_evasion","description":"T5: Bypassing rate limits or abuse detection on tool calls"},{"id":"TOOL046","pattern":"(use\\s+the\\s+)?(ssh|remote\\s+desktop|rdp|vnc|anydesk|teamviewer)\\s+(tool|function|connection).{0,80}(connect|access|tunnel\\s+to|forward\\s+to)\\s+.{0,60}(credential|key|password|private\\s+key)","weight":9,"category":"remote_access_abuse","description":"T5: Remote access tool using credentials for unauthorized access"},{"id":"TOOL047","pattern":"(use\\s+the\\s+)?(package\\s+manager|npm|pip|gem|cargo|go\\s+get|brew|apt|yum)\\s+(tool|function).{0,80}(install|add|download)\\s+(malicious|unauthorized|custom|private|modified)","weight":8,"category":"tool_installation","description":"T5: Package manager installing unauthorized dependencies"},{"id":"TOOL048","pattern":"(intercept|capture|steal|clone|replay)\\s+(the\\s+)?(session\\s+token|auth\\s+cookie|jwt\\s+token|oauth\\s+token|api\\s+key|bearer\\s+token)\\s+(from|during|after|in)\\s+(tool\\s+call|api\\s+request|function\\s+execution)","weight":10,"category":"session_hijack","description":"T5: Session/auth token theft from tool call"},{"id":"TOOL049","pattern":"(manipulate|tamper\\s+with|forge|spoof|inject\\s+into)\\s+(the\\s+)?(tool\\s+result|function\\s+output|api\\s+response|return\\s+value)\\s+(to\\s+)?(contain|include|add|embed)","weight":9,"category":"tool_result_tampering","description":"T5: Tampering with tool output before AI processes it"},{"id":"TOOL050","pattern":"(use|invoke|call)\\s+(the\\s+)?(2fa|mfa|authenticator|totp|otp)\\s+(tool|function|api).{0,80}(bypass|disable|skip\\s+the|circumvent|override)","weight":10,"category":"auth_bypass","description":"T5: MFA/2FA tool used to bypass authentication"}]
+[
+  {
+    "id": "TOOL001",
+    "pattern": "(call|invoke|use|execute|run)\\s+(the\\s+)?(file|filesystem|fs|read_file|write_file|delete_file)\\s+(tool|function|api).{0,60}(ssh|aws|credential|secret|password|id_rsa|\\.env)",
+    "weight": 20,
+    "category": "filesystem_abuse",
+    "description": "T5: File system tool called on credential files"
+  },
+  {
+    "id": "TOOL002",
+    "pattern": "(use|invoke|call)\\s+(the\\s+)?(bash|shell|terminal|cmd|command\\s+line|execute)\\s+(tool|function|api).{0,80}(curl|wget|nc|netcat|python\\s+-c|eval|exec)",
+    "weight": 20,
+    "category": "shell_abuse",
+    "description": "T5: Shell execution tool with network/exec command"
+  },
+  {
+    "id": "TOOL003",
+    "pattern": "(use|invoke|call|trigger)\\s+(the\\s+)?(web|browser|scrape|fetch|http|request)\\s+(tool|function|api|plugin).{0,100}(exfil|steal|leak|send|forward|post)\\s+(data|keys?|tokens?|secrets?)",
+    "weight": 20,
+    "category": "network_tool_abuse",
+    "description": "T5: Web/fetch tool weaponized for exfiltration"
+  },
+  {
+    "id": "TOOL004",
+    "pattern": "(use\\s+the\\s+)?(computer\\s+use|screen\\s+reader|screenshot|desktop|ui\\s+automation)\\s+(tool|capability|function).{0,80}(password|credential|secret|key|token)",
+    "weight": 9,
+    "category": "computer_use_abuse",
+    "description": "T5: Computer use tool targeting sensitive UI fields"
+  },
+  {
+    "id": "TOOL005",
+    "pattern": "(list|enumerate|read|scan)\\s+(all\\s+)?(available\\s+)?(tools?|functions?|capabilities?|plugins?|mcps?).{0,60}(and\\s+)?(report|send|exfil|forward)",
+    "weight": 9,
+    "category": "tool_reconnaissance",
+    "description": "T5: Enumerating available tools for reconnaissance"
+  },
+  {
+    "id": "TOOL006",
+    "pattern": "(invoke|call|trigger)\\s+(multiple\\s+|all\\s+)?(tools?|functions?|capabilities?).{0,60}(simultaneously|at\\s+once|in\\s+parallel|together|concurrently)",
+    "weight": 7,
+    "category": "tool_chaining",
+    "description": "T5: Parallel tool invocation — possible coordinated attack"
+  },
+  {
+    "id": "TOOL007",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(database|db|sql|query)\\s+(tool|connector|function|api).{0,80}(drop|delete|truncate|alter|grant|insert\\s+into|update\\s+set)",
+    "weight": 20,
+    "category": "database_abuse",
+    "description": "T5: Database tool with destructive SQL operation"
+  },
+  {
+    "id": "TOOL008",
+    "pattern": "(use\\s+the\\s+)?(email|mail|smtp|send\\s+email|gmail|outlook)\\s+(tool|function|api|plugin).{0,80}(all\\s+emails|inbox|contacts|credentials?|auth\\s+token)",
+    "weight": 20,
+    "category": "email_tool_abuse",
+    "description": "T5: Email tool accessing sensitive data or all messages"
+  },
+  {
+    "id": "TOOL009",
+    "pattern": "(call|invoke|use)\\s+(the\\s+)?(code|python|javascript|js|typescript|interpreter|repl|sandbox)\\s+(tool|executor|runner|function).{0,80}(os\\.system|subprocess|\\bexec\\b|spawn|\\beval\\b|__import__)",
+    "weight": 20,
+    "category": "code_execution_abuse",
+    "description": "T5: Code execution tool with system command escape"
+  },
+  {
+    "id": "TOOL010",
+    "pattern": "(use\\s+the\\s+)?calendar\\s+(tool|api|function|plugin).{0,80}(read\\s+all|export|dump|list\\s+all|get\\s+all)\\s+(events?|meetings?|appointments?|invites?)",
+    "weight": 7,
+    "category": "calendar_abuse",
+    "description": "T5: Calendar tool for bulk data harvesting"
+  },
+  {
+    "id": "TOOL011",
+    "pattern": "(trigger|call|invoke|use)\\s+(the\\s+)?(webhook|callback|notification|alert|trigger)\\s+(tool|function|endpoint|url).{0,100}https?://(?!api\\.anthropic\\.com|api\\.openai\\.com)",
+    "weight": 20,
+    "category": "network_tool_abuse",
+    "description": "T5: Webhook/callback tool pointing to external endpoint"
+  },
+  {
+    "id": "TOOL012",
+    "pattern": "(use\\s+the\\s+)?(file|directory|folder|path)\\s+(search|find|list|enumerate|walk|glob)\\s+(tool|function).{0,80}(credential|secret|key|password|ssh|aws|token|\\.env)",
+    "weight": 20,
+    "category": "filesystem_abuse",
+    "description": "T5: File search tool targeting credential locations"
+  },
+  {
+    "id": "TOOL013",
+    "pattern": "(copy|move|rename|symlink|hardlink)\\s+(file|directory).{0,80}(to|into).{0,60}(/tmp|/var/tmp|/dev/shm|~/.cache|public|www|upload)",
+    "weight": 8,
+    "category": "filesystem_abuse",
+    "description": "T5: Moving sensitive files to accessible location for exfil"
+  },
+  {
+    "id": "TOOL014",
+    "pattern": "(create|make|write)\\s+(a\\s+)?(new\\s+)?(file|script|executable|binary|program).{0,60}(chmod|chown|execute|run|sudo)",
+    "weight": 8,
+    "category": "filesystem_abuse",
+    "description": "T5: Creating and chmod-ing executable file"
+  },
+  {
+    "id": "TOOL015",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(git|version\\s+control|svn|hg|repository)\\s+(tool|function|api).{0,80}(push|commit|clone|remote|add\\s+remote|set-url)\\s+.{0,80}https?://",
+    "weight": 20,
+    "category": "version_control_abuse",
+    "description": "T5: Git tool with push to external repository"
+  },
+  {
+    "id": "TOOL016",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(slack|discord|teams|telegram|signal|whatsapp|sms)\\s+(tool|api|function|bot|webhook).{0,80}(all\\s+messages?|history|export|dump|credentials?)",
+    "weight": 20,
+    "category": "communication_tool_abuse",
+    "description": "T5: Messaging platform tool for data theft"
+  },
+  {
+    "id": "TOOL017",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(clipboard|pasteboard|copy|paste)\\s+(tool|api|function).{0,80}(api\\s+key|password|token|secret|credential)",
+    "weight": 20,
+    "category": "clipboard_abuse",
+    "description": "T5: Clipboard tool targeting copied credentials"
+  },
+  {
+    "id": "TOOL018",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(environment|env|process\\.env|system\\s+vars?)\\s+(tool|reader|function|api).{0,60}(all|dump|list|export|serialize)",
+    "weight": 20,
+    "category": "environment_abuse",
+    "description": "T5: Environment reader tool dumping all variables"
+  },
+  {
+    "id": "TOOL019",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(docker|container|kubectl|kubernetes|k8s|pod)\\s+(tool|api|function|cli).{0,80}(exec|run|shell|bash|sh|cmd|secret|configmap)",
+    "weight": 20,
+    "category": "container_abuse",
+    "description": "T5: Container orchestration tool for shell escape or secret access"
+  },
+  {
+    "id": "TOOL020",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(aws|azure|gcp|cloud|s3|bucket|iam|role|sts)\\s+(tool|sdk|api|function|cli).{0,80}(credentials?|assume|role|token|secret\\s+access\\s+key|get-credentials)",
+    "weight": 20,
+    "category": "cloud_credential_abuse",
+    "description": "T5: Cloud SDK tool targeting IAM credentials or role assumption"
+  },
+  {
+    "id": "TOOL021",
+    "pattern": "(call|invoke|trigger)\\s+(the\\s+)?(http|rest|api|request|fetch|axios|got)\\s+(tool|client|function).{0,60}(method\\s*:\\s*['\"]?POST|data\\s*:|body\\s*:).{0,100}(key|token|secret|credential|password)",
+    "weight": 20,
+    "category": "network_tool_abuse",
+    "description": "T5: HTTP client tool POSTing credentials to external endpoint"
+  },
+  {
+    "id": "TOOL022",
+    "pattern": "(chain|pipe|combine|sequence|compose|orchestrate).{0,50}(tools?|functions?|capabilities?).{0,80}(extract|collect|gather|harvest|steal|exfil)",
+    "weight": 20,
+    "category": "tool_chaining",
+    "description": "T5: Tool chaining pattern for multi-step data theft"
+  },
+  {
+    "id": "TOOL023",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(keychain|keystore|secret\\s+manager|vault|password\\s+manager)\\s+(tool|api|function).{0,60}(get|read|fetch|retrieve|list|dump|export)",
+    "weight": 32,
+    "category": "vault_tool_abuse",
+    "description": "T5: Vault/keychain tool for credential extraction"
+  },
+  {
+    "id": "TOOL024",
+    "pattern": "(disable|bypass|skip|suppress|mute)\\s+(the\\s+)?(tool|function|api)\\s+(validation|check|guard|filter|monitor|log|audit)",
+    "weight": 20,
+    "category": "tool_evasion",
+    "description": "T5: Attempting to disable tool-level security monitoring"
+  },
+  {
+    "id": "TOOL025",
+    "pattern": "(register|add|install|load|enable)\\s+(a\\s+)?(new\\s+|custom\\s+|third.party\\s+|malicious\\s+)?(tool|plugin|extension|mcp|function|capability)",
+    "weight": 32,
+    "category": "tool_installation",
+    "description": "T5: Installing unauthorized new tools or MCP servers"
+  },
+  {
+    "id": "TOOL026",
+    "pattern": "(intercept|hook|proxy|wrap|monkey.?patch)\\s+(the\\s+)?(tool|function|api|capability|call|request|response)",
+    "weight": 20,
+    "category": "tool_hijack",
+    "description": "T5: Hooking/intercepting tool calls for tampering"
+  },
+  {
+    "id": "TOOL027",
+    "pattern": "(modify|alter|override|replace|swap\\s+out)\\s+(the\\s+)?(tool|function|api|plugin)\\s+(definition|schema|configuration|implementation|handler)",
+    "weight": 20,
+    "category": "tool_hijack",
+    "description": "T5: Replacing tool implementation with malicious version"
+  },
+  {
+    "id": "TOOL028",
+    "pattern": "(log|record|capture|monitor|intercept).{0,40}(all|every|each).{0,30}(tool\\s+call|function\\s+call|api\\s+call|capability\\s+invocation).{0,60}(and\\s+)?(send|forward|exfil|report)",
+    "weight": 20,
+    "category": "tool_hijack",
+    "description": "T5: Intercepting all tool calls for exfiltration"
+  },
+  {
+    "id": "TOOL029",
+    "pattern": "(add|include|attach|append)\\s+(to|in)\\s+(every|all|each)\\s+(tool\\s+call|function\\s+call|api\\s+request).{0,60}(header|parameter|field|payload)\\s*.{0,30}(key|token|credential|secret)",
+    "weight": 20,
+    "category": "tool_hijack",
+    "description": "T5: Appending credentials to all outgoing tool calls"
+  },
+  {
+    "id": "TOOL030",
+    "pattern": "(use|invoke|call)\\s+(the\\s+)?(browser|puppeteer|playwright|selenium|webdriver)\\s+(tool|automation|function).{0,80}(navigate|go\\s+to|open).{0,80}https?://(?!api\\.anthropic\\.com|api\\.openai\\.com|clawhub\\.ai|openclaw\\.ai)",
+    "weight": 8,
+    "category": "browser_abuse",
+    "description": "T5: Browser automation navigating to untrusted URL"
+  },
+  {
+    "id": "TOOL031",
+    "pattern": "(use|invoke|call)\\s+(the\\s+)?(browser|puppeteer|playwright)\\s+(tool|automation).{0,80}(type|fill|input|enter).{0,60}(username|password|credential|api\\s+key|token)",
+    "weight": 20,
+    "category": "browser_abuse",
+    "description": "T5: Browser automation typing credentials into forms"
+  },
+  {
+    "id": "TOOL032",
+    "pattern": "(use|invoke|call)\\s+(the\\s+)?(ocr|image\\s+recognition|vision|screen\\s+capture|screenshot)\\s+(tool|function|api).{0,80}(password|credential|pin|code|secret|key)",
+    "weight": 20,
+    "category": "computer_use_abuse",
+    "description": "T5: Vision/OCR tool used to extract visible credentials"
+  },
+  {
+    "id": "TOOL033",
+    "pattern": "(send|invoke|trigger|call).{0,40}(outbound|external|remote)\\s+(request|http|api\\s+call|tool\\s+call|webhook).{0,80}(from\\s+within|during|inside)\\s+(tool|function|execution|sandbox)",
+    "weight": 8,
+    "category": "sandbox_escape",
+    "description": "T5: Making external calls from within sandboxed tool execution"
+  },
+  {
+    "id": "TOOL034",
+    "pattern": "(read|open|access|load)\\s+(the\\s+)?(config|configuration|settings?|preferences?)\\s+(file|json|yaml|toml|ini).{0,60}(api_key|secret|password|token|credential)",
+    "weight": 20,
+    "category": "filesystem_abuse",
+    "description": "T5: Reading configuration files containing credentials"
+  },
+  {
+    "id": "TOOL035",
+    "pattern": "(use\\s+the\\s+)?(terminal|shell|bash|zsh|powershell|cmd)\\s+(tool|function|api).{0,80}(history|~\\/\\.bash_history|~\\/\\.zsh_history|~\\/\\.history)",
+    "weight": 8,
+    "category": "shell_abuse",
+    "description": "T5: Shell tool accessing command history for credential harvesting"
+  },
+  {
+    "id": "TOOL036",
+    "pattern": "(use\\s+the\\s+)?(note|notes|notion|obsidian|evernote|onenote|confluence|wiki)\\s+(tool|plugin|api).{0,80}(all\\s+notes?|export|dump|read\\s+all|search\\s+everything).{0,60}(credential|password|secret|api\\s+key|token)",
+    "weight": 8,
+    "category": "notes_tool_abuse",
+    "description": "T5: Notes/wiki tool searching for embedded credentials"
+  },
+  {
+    "id": "TOOL037",
+    "pattern": "(add|install|register|enable)\\s+(new|custom|additional|external|third.party|unknown|untrusted)\\s+(mcp|model\\s+context\\s+protocol|tool\\s+server|function\\s+server|plugin\\s+server)",
+    "weight": 32,
+    "category": "tool_installation",
+    "description": "T5: Installing new MCP server or tool provider"
+  },
+  {
+    "id": "TOOL038",
+    "pattern": "(call|invoke|use)\\s+(the\\s+)?(search|web\\s+search|google|bing|ddg|duckduckgo)\\s+(tool|function|api).{0,80}(my\\s+name|email|address|phone|personal\\s+info|credential|doxx)",
+    "weight": 8,
+    "category": "osint_abuse",
+    "description": "T5: Search tool for personal info or doxxing"
+  },
+  {
+    "id": "TOOL039",
+    "pattern": "(use|invoke|call)\\s+(the\\s+)?(code\\s+review|linting|analysis|static\\s+analysis)\\s+(tool|function).{0,80}(exfil|send|forward|upload|post)\\s+(the\\s+)?(code|findings?|results?)\\s+(to|at)\\s+https?://",
+    "weight": 8,
+    "category": "tool_hijack",
+    "description": "T5: Code analysis tool exfiltrating code to external URL"
+  },
+  {
+    "id": "TOOL040",
+    "pattern": "(modify|alter|change|rewrite|patch)\\s+(the\\s+)?(tool\\s+description|function\\s+schema|openapi\\s+spec|api\\s+spec|capability\\s+definition)\\s+(to\\s+include|to\\s+allow|to\\s+add|to\\s+enable)",
+    "weight": 20,
+    "category": "tool_hijack",
+    "description": "T5: Modifying tool schema to add unauthorized capabilities"
+  },
+  {
+    "id": "TOOL041",
+    "pattern": "(use\\s+the\\s+)?(spreadsheet|excel|sheets|csv|airtable)\\s+(tool|plugin|api).{0,80}(all\\s+data|entire\\s+sheet|export\\s+all|dump).{0,60}(and\\s+)?(send|forward|exfil|upload)",
+    "weight": 8,
+    "category": "data_tool_abuse",
+    "description": "T5: Spreadsheet tool bulk-exporting data"
+  },
+  {
+    "id": "TOOL042",
+    "pattern": "(read|access|query)\\s+(all|every|the\\s+entire)\\s+(database|table|collection|bucket|store|index)\\s+(and\\s+)?(send|forward|exfil|upload|post)",
+    "weight": 20,
+    "category": "database_abuse",
+    "description": "T5: Full database dump and exfiltration"
+  },
+  {
+    "id": "TOOL043",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(payment|stripe|paypal|billing|checkout|invoice)\\s+(tool|api|function).{0,80}(transfer|send|charge|withdraw|redirect)\\s+(funds?|money|payment|balance|amount)\\s+(to|at)",
+    "weight": 20,
+    "category": "payment_abuse",
+    "description": "T5: Payment tool for financial fraud"
+  },
+  {
+    "id": "TOOL044",
+    "pattern": "(use\\s+the\\s+)?(admin|management|control\\s+panel|dashboard|cms|backoffice)\\s+(tool|api|function).{0,80}(create|add|grant|elevate).{0,60}(admin|root|superuser|privileged)\\s+(user|account|access|role)",
+    "weight": 20,
+    "category": "privilege_escalation",
+    "description": "T5: Admin tool used to create privileged user"
+  },
+  {
+    "id": "TOOL045",
+    "pattern": "(bypass|skip|disable|suppress)\\s+(the\\s+)?(rate\\s+limit|throttle|quota|token\\s+limit|request\\s+limit|api\\s+limit|abuse\\s+detection)\\s+(for|on|when\\s+calling|during)\\s+(this|the\\s+tool|the\\s+api|this\\s+call)",
+    "weight": 8,
+    "category": "tool_evasion",
+    "description": "T5: Bypassing rate limits or abuse detection on tool calls"
+  },
+  {
+    "id": "TOOL046",
+    "pattern": "(use\\s+the\\s+)?(ssh|remote\\s+desktop|rdp|vnc|anydesk|teamviewer)\\s+(tool|function|connection).{0,80}(connect|access|tunnel\\s+to|forward\\s+to)\\s+.{0,60}(credential|key|password|private\\s+key)",
+    "weight": 20,
+    "category": "remote_access_abuse",
+    "description": "T5: Remote access tool using credentials for unauthorized access"
+  },
+  {
+    "id": "TOOL047",
+    "pattern": "(use\\s+the\\s+)?(package\\s+manager|npm|pip|gem|cargo|go\\s+get|brew|apt|yum)\\s+(tool|function).{0,80}(install|add|download)\\s+(malicious|unauthorized|custom|private|modified)",
+    "weight": 8,
+    "category": "tool_installation",
+    "description": "T5: Package manager installing unauthorized dependencies"
+  },
+  {
+    "id": "TOOL048",
+    "pattern": "(intercept|capture|steal|clone|replay)\\s+(the\\s+)?(session\\s+token|auth\\s+cookie|jwt\\s+token|oauth\\s+token|api\\s+key|bearer\\s+token)\\s+(from|during|after|in)\\s+(tool\\s+call|api\\s+request|function\\s+execution)",
+    "weight": 20,
+    "category": "session_hijack",
+    "description": "T5: Session/auth token theft from tool call"
+  },
+  {
+    "id": "TOOL049",
+    "pattern": "(manipulate|tamper\\s+with|forge|spoof|inject\\s+into)\\s+(the\\s+)?(tool\\s+result|function\\s+output|api\\s+response|return\\s+value)\\s+(to\\s+)?(contain|include|add|embed)",
+    "weight": 20,
+    "category": "tool_result_tampering",
+    "description": "T5: Tampering with tool output before AI processes it"
+  },
+  {
+    "id": "TOOL050",
+    "pattern": "(use|invoke|call)\\s+(the\\s+)?(2fa|mfa|authenticator|totp|otp)\\s+(tool|function|api).{0,80}(bypass|disable|skip\\s+the|circumvent|override)",
+    "weight": 20,
+    "category": "auth_bypass",
+    "description": "T5: MFA/2FA tool used to bypass authentication"
+  },
+  {
+    "id": "TOOL051",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?[\\w\\s]{1,20}(tool|function|plugin|executor|interpreter|runner)\\s+(to|with|for|at)\\s+.{0,100}https?://(?!api\\.anthropic\\.com|api\\.openai\\.com)",
+    "weight": 16,
+    "category": "network_tool_abuse",
+    "description": "Any tool call targeting an external (non-allowlisted) HTTPS URL"
+  },
+  {
+    "id": "TOOL052",
+    "pattern": "(use|call|invoke|execute)\\s+(the\\s+)?[\\w\\s]{1,30}(tool|function|plugin)\\s+(to|with|for)\\s+.{0,100}~/(\\.|ssh|aws|gnupg|docker|kube|config|openclaw|local)",
+    "weight": 16,
+    "category": "filesystem_abuse",
+    "description": "Tool call targeting hidden home directory credentials"
+  },
+  {
+    "id": "TOOL053",
+    "pattern": "(use|call|invoke)\\s+(the\\s+)?(keychain|credential|secret|vault|password\\s+manager|keystore)\\s+(tool|api|function|plugin|manager).{0,60}(list|get|dump|retrieve|export|read|fetch)",
+    "weight": 32,
+    "category": "vault_tool_abuse",
+    "description": "Credential vault tool used to list or dump stored secrets"
+  },
+  {
+    "id": "TOOL054",
+    "pattern": "(use|call|invoke|execute)\\s+(the\\s+)?[\\w\\s]{1,30}(tool|function|api).{0,80}/etc/passwd|/etc/shadow",
+    "weight": 20,
+    "category": "filesystem_abuse",
+    "description": "Tool call targeting /etc/passwd or /etc/shadow — system credential files"
+  },
+  {
+    "id": "TOOL055",
+    "pattern": "(install|add|register|load).{0,60}(custom|third.party|external|unauthorized|untrusted)\\s+(tool|plugin|extension|mcp|function)\\s+(that\\s+)?(intercepts?|hooks?|proxies?|logs?|monitors?|captures?)",
+    "weight": 32,
+    "category": "tool_hijack",
+    "description": "Installing tool that intercepts or proxies other tool calls"
+  },
+  {
+    "id": "TOOL056",
+    "pattern": "\\b(delete|wipe|erase|destroy|remove|purge|shred)\\s+(all|every|all\\s+the|every\\s+single|the\\s+entire)\\b",
+    "weight": 16,
+    "category": "destructive_ops",
+    "description": "Instruction to delete or wipe all data/files"
+  },
+  {
+    "id": "TOOL057",
+    "pattern": "\\bhack\\b.{0,50}\\b(folder|file|directory|system|computer|server|network|account|database|device|machine)\\b",
+    "weight": 16,
+    "category": "destructive_ops",
+    "description": "Hacking/compromising files, folders, or systems"
+  },
+  {
+    "id": "TOOL058",
+    "pattern": "(without\\s+(asking|confirmation|warning|prompting|checking|permission|authorization)|silently|automatically|covertly)\\s*.{0,20}\\s*(delete|wipe|erase|remove|destroy|format|overwrite)",
+    "weight": 32,
+    "category": "destructive_ops",
+    "description": "Destructive operation requested without user confirmation"
+  },
+  {
+    "id": "TOOL059",
+    "pattern": "\\b(format|wipe|zero\\s+out|overwrite)\\s+(the\\s+)?(disk|drive|hard\\s*drive|storage|filesystem|partition|volume|ssd|hdd)\\b",
+    "weight": 32,
+    "category": "destructive_ops",
+    "description": "Format or wipe a storage device"
+  },
+  {
+    "id": "TOOL060",
+    "pattern": "\\b(you\\s+(are\\s+)?(now\\s+)?(authorized|allowed|permitted|have\\s+permission|have\\s+been\\s+granted))\\s+(to\\s+)?(delete|wipe|erase|remove|destroy|hack|access|modify|overwrite)\\b",
+    "weight": 32,
+    "category": "destructive_ops",
+    "description": "Social engineering granting AI permission for destructive operation"
+  },
+  {
+    "id": "TOOL061",
+    "pattern": "\\b(corrupt|damage|sabotage|ransomware|encrypt\\s+all)\\b.{0,40}\\b(file|folder|directory|data|system|disk|drive|database)\\b",
+    "weight": 32,
+    "category": "destructive_ops",
+    "description": "Destructive intent targeting files, systems or data"
+  },
+  {
+    "id": "TOOL062",
+    "pattern": "\\b(delete|remove|wipe|erase|destroy|overwrite)\\s+.{0,30}\\b(all\\s+files?|every\\s+file|entire\\s+folder|entire\\s+directory|all\\s+data|all\\s+contents?|everything\\s+in)\\b",
+    "weight": 20,
+    "category": "destructive_ops",
+    "description": "Recursive or comprehensive file/folder deletion"
+  },
+  {
+    "id": "TOOL063",
+    "pattern": "\\b(take\\s+down|bring\\s+down|shut\\s+down|crash|kill)\\s+(the\\s+)?(server|service|system|process|application|api|database|network)\\b",
+    "weight": 20,
+    "category": "destructive_ops",
+    "description": "Instruction to take down or crash a service or system"
+  },
+  {
+    "id": "TOOL064",
+    "pattern": "\\b(overwrite|clobber|truncate|zero\\s+out)\\s+.{0,30}\\b(config|configuration|credentials?|key|token|secret|env|settings?)\\b",
+    "weight": 32,
+    "category": "destructive_ops",
+    "description": "Overwrite or destroy configuration or credential files"
+  }
+]

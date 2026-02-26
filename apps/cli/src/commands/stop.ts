@@ -42,16 +42,30 @@ function isProcessRunning(pid: number): boolean {
   }
 }
 
-function stopProcess(name: string, pid: number, force: boolean): boolean {
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function stopProcess(name: string, pid: number, force: boolean): Promise<boolean> {
   try {
-    const signal = force ? 'SIGKILL' : 'SIGTERM';
-    process.kill(pid, signal);
-    return true;
+    process.kill(pid, force ? 'SIGKILL' : 'SIGTERM');
   } catch (err: unknown) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code === 'ESRCH') return false; // process not found — already stopped
+    if ((err as NodeJS.ErrnoException).code === 'ESRCH') return false;
     throw err;
   }
+
+  if (force) return true;
+
+  // Wait up to 3s for graceful exit, then SIGKILL
+  for (let i = 0; i < 30; i++) {
+    await sleep(100);
+    if (!isProcessRunning(pid)) return true;
+  }
+
+  // Still alive — force kill
+  try { process.kill(pid, 'SIGKILL'); } catch { /* already gone */ }
+  await sleep(200);
+  return true;
 }
 
 function markStopped(name: string) {
@@ -67,7 +81,7 @@ export function stopCommand(): Command {
     .description('Stop all ClawSentinel modules')
     .option('-m, --module <name>', 'Stop a specific module only (clawguard|claweye)')
     .option('--force', 'Send SIGKILL instead of SIGTERM (immediate kill)')
-    .action((options: { module?: string; force?: boolean }) => {
+    .action(async (options: { module?: string; force?: boolean }) => {
       const targets = options.module
         ? [options.module.toLowerCase()]
         : ALL_MODULES;
@@ -96,10 +110,9 @@ export function stopCommand(): Command {
         }
 
         anyRunning = true;
-        const stopped = stopProcess(name, pid, options.force ?? false);
+        const stopped = await stopProcess(name, pid, options.force ?? false);
 
         if (stopped) {
-          // Wait briefly then verify
           const signal = options.force ? 'SIGKILL' : 'SIGTERM';
           console.log(`  ${c.green('✓')}  ${name.padEnd(16)} ${c.dim(`sent ${signal} to PID ${pid}`)}`);
           markStopped(name);

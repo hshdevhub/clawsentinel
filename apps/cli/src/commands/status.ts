@@ -1,7 +1,22 @@
 import { Command } from 'commander';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { getDb, config } from '@clawsentinel/core';
 
-const VERSION = '0.6.0';
+const RUN_DIR = path.join(os.homedir(), '.clawsentinel', 'run');
+
+function isPidRunning(name: string): boolean {
+  try {
+    const pid = parseInt(fs.readFileSync(path.join(RUN_DIR, `${name}.pid`), 'utf8').trim(), 10);
+    process.kill(pid, 0); // throws ESRCH if process doesn't exist
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const VERSION = '0.7.0';
 
 // Inline ANSI helpers (no ESM-only deps needed for status)
 const c = {
@@ -116,8 +131,20 @@ export function statusCommand(): Command {
       console.log(`  ${c.bold(`ClawSentinel v${VERSION}`)}  ${c.dim(`· Free Plan · ${now}`)}`);
       console.log(`  ${c.grey('─'.repeat(54))}`);
 
+      // ClawGuard running state — source of truth for in-process modules
+      const guardRunning = dbStatuses['clawguard'] === 'running' || isPidRunning('clawguard');
+
       for (const mod of modules) {
-        const rawStatus = (dbStatuses[mod.id] ?? (mod.enabled ? 'stopped' : 'disabled')) as ModuleStatus;
+        // ClawVault and ClawHub Scanner run inside the ClawGuard process
+        const inferredFromGuard = (mod.id === 'clawvault' || mod.id === 'clawhub-scanner') && guardRunning;
+        // ClawEye: Next.js doesn't write to DB, check PID file directly
+        const eyeRunning = mod.id === 'claweye' && isPidRunning('claweye');
+
+        const rawStatus = (
+          inferredFromGuard ? 'running'
+          : eyeRunning ? 'running'
+          : dbStatuses[mod.id] ?? (mod.enabled ? 'stopped' : 'disabled')
+        ) as ModuleStatus;
         const dot   = statusDot(rawStatus);
         const label = statusLabel(rawStatus).padEnd(rawStatus === 'disabled' ? 15 : 14 + (rawStatus === 'running' ? 0 : 0));
         const portStr = mod.port != null ? c.dim(` :${mod.port}`) : '';

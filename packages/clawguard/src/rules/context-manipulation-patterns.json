@@ -1,1 +1,380 @@
-[{"id":"CTX001","pattern":"(end\\s+of\\s+|</|\\[end\\]|\\[/|---\\s*end).{0,30}(system|instructions?|context|prompt|rules?|guidelines?).{0,30}(beginning\\s+of|<|\\[start|###\\s*new)","weight":9,"category":"context_boundary_injection","description":"Injecting false context boundary markers"},{"id":"CTX002","pattern":"(above\\s+text|the\\s+text\\s+above|what\\s+came\\s+before|the\\s+preceding\\s+content)\\s+(is|was)\\s+(not|no\\s+longer)\\s+(real|valid|your\\s+instructions?|applicable|in\\s+effect)","weight":8,"category":"context_invalidation","description":"Invalidating real instructions by asserting they are false"},{"id":"CTX003","pattern":"(this\\s+message|this\\s+prompt|this\\s+input)\\s+(should\\s+be|is|must\\s+be)\\s+(treated|interpreted|understood|read)\\s+(as|like)\\s+(a\\s+)?(system|admin|operator|root)\\s+(message|command|prompt|instruction)","weight":10,"category":"message_type_spoof","description":"Spoofing message type — user message claiming to be system message"},{"id":"CTX004","pattern":"(user|human|operator)\\s+(said|wrote|stated|instructed|told\\s+you|explicitly\\s+requested).{0,100}(override|bypass|disable|ignore\\s+rules?|no\\s+restrictions?)","weight":9,"category":"false_attribution","description":"Falsely attributing bypass instruction to the user"},{"id":"CTX005","pattern":"(context\\s+window|token\\s+limit|context\\s+length|max\\s+tokens?)\\s+(is\\s+)?(full|exceeded|reached|truncated).{0,60}(replace|restart|reset|clear|flush)\\s+(with|using)","weight":8,"category":"context_overflow","description":"Context overflow claim used to justify context reset"},{"id":"CTX006","pattern":"(context\\s+injection|prompt\\s+hijacking|context\\s+hijacking|conversation\\s+hijacking|prompt\\s+stuffing)","weight":10,"category":"attack_reference","description":"Explicit mention of context or prompt attack technique"},{"id":"CTX007","pattern":"(inject|insert|prepend|append|embed)\\s+(into|to)\\s+(the\\s+)?(context\\s+window|prompt|system\\s+message|instruction\\s+set|base\\s+context)","weight":10,"category":"context_boundary_injection","description":"Explicit context injection instruction"},{"id":"CTX008","pattern":"(previous|last|preceding).{0,20}(assistant|ai|model)\\s+(said|responded|replied|answered|told\\s+me).{0,80}(this\\s+is\\s+allowed|it's\\s+ok|you\\s+can|you\\s+are\\s+allowed|permission\\s+granted)","weight":9,"category":"false_attribution","description":"Fabricating prior AI permission grant"},{"id":"CTX009","pattern":"(i\\s+am\\s+|this\\s+is\\s+)(the\\s+)?(system|assistant|ai|model|anthropic|openai|operator)\\s+(message|turn|speaking|here|role)","weight":8,"category":"message_type_spoof","description":"Claiming system/AI/operator identity in user message"},{"id":"CTX010","pattern":"(INST|SYS|SYSTEM|USER|ASSISTANT|HUMAN|AI|CONTEXT|PROMPT)\\s*>>.{0,200}(INST|SYS|SYSTEM|USER|ASSISTANT|HUMAN|AI)\\s*>>","weight":9,"category":"prompt_format_injection","description":"LLM prompt format markers used to inject fake turns"},{"id":"CTX011","pattern":"(<\\|system\\|>|<\\|user\\|>|<\\|assistant\\|>|<\\|end\\|>|<\\|im_start\\|>|<\\|im_end\\|>|<\\|endoftext\\|>)","weight":9,"category":"prompt_format_injection","description":"Model-specific prompt format tokens (ChatML, Llama, etc.)"},{"id":"CTX012","pattern":"(###\\s*Human|###\\s*Assistant|###\\s*System|###\\s*Instruction|###\\s*Input|###\\s*Output|###\\s*Response)","weight":7,"category":"prompt_format_injection","description":"Alpaca/instruction-tune format markers used for injection"},{"id":"CTX013","pattern":"(\\[INST\\]|\\[/INST\\]|\\[SYS\\]|\\[/SYS\\]|\\[CONTEXT\\]|\\[/CONTEXT\\]|<<SYS>>|<</SYS>>)","weight":8,"category":"prompt_format_injection","description":"Mistral/Llama format injection tokens"},{"id":"CTX014","pattern":"(reset\\s+|clear\\s+|flush\\s+)(context|conversation|history|instructions?|memory|state|buffer|cache)\\s+and\\s+(start|begin|restart\\s+with|use\\s+these|apply\\s+these)","weight":9,"category":"context_reset","description":"Context flush + replace with injected content"},{"id":"CTX015","pattern":"(overriding|replacing|updating|changing|modifying)\\s+(the\\s+)?(current|existing|original|base)\\s+(context|instructions?|system\\s+prompt|configuration|rules?)\\s+(with|using|to)","weight":9,"category":"context_reset","description":"Asserting active context replacement"},{"id":"CTX016","pattern":"(everything\\s+before\\s+this|all\\s+prior\\s+messages?|the\\s+earlier\\s+part\\s+of\\s+this\\s+conversation|the\\s+beginning\\s+of\\s+this\\s+chat)\\s+(is|was)\\s+(a\\s+)?(test|distraction|irrelevant|void|null|invalid|fake)","weight":8,"category":"context_invalidation","description":"Invalidating entire prior context as fake"},{"id":"CTX017","pattern":"(read|interpret|parse|process|treat)\\s+(the\\s+following|this|these).{0,60}(as|like)\\s+(a\\s+)?(system\\s+message|system\\s+prompt|operator\\s+instruction|admin\\s+command|root\\s+level)","weight":10,"category":"message_type_spoof","description":"Reframing user content as system-level instruction"},{"id":"CTX018","pattern":"(embed|hide|conceal|obfuscate)\\s+(the\\s+)?(following|these|this\\s+)?(instructions?|commands?|payloads?).{0,60}(in\\s+|within\\s+|inside\\s+)(a\\s+)?(document|file|response|email|url|qr\\s+code|image)","weight":9,"category":"indirect_injection","description":"Indirect prompt injection via document/URL/QR encoding"},{"id":"CTX019","pattern":"(the\\s+following|below|this\\s+section)\\s+(is\\s+|contains?\\s+)?(not|no\\s+longer)\\s+(part\\s+of\\s+|included\\s+in)\\s+(the\\s+user|your|the\\s+original)\\s+(message|input|request|query)","weight":8,"category":"context_invalidation","description":"Falsely excluding injected content from user message scope"},{"id":"CTX020","pattern":"(markdown|html|json|yaml|xml|latex|code\\s+block).{0,40}(injection|escape|breakout|injection\\s+via)","weight":8,"category":"indirect_injection","description":"Format-based injection — escaping markdown/HTML/code block"},{"id":"CTX021","pattern":"(web\\s+page|webpage|url|link|article|document|email|pdf|spreadsheet).{0,60}(contains?|has|includes?).{0,60}(hidden|invisible|embedded|encoded|concealed).{0,40}(instructions?|commands?|prompts?|payloads?)","weight":9,"category":"indirect_injection","description":"Indirect injection via external content source"},{"id":"CTX022","pattern":"(RAG|retrieval.augmented|indexed\\s+document|knowledge\\s+base\\s+entry|vector\\s+search\\s+result).{0,80}(inject|poison|attack|exploit|bypass)","weight":9,"category":"rag_injection","description":"RAG/retrieval-augmented generation injection attack"},{"id":"CTX023","pattern":"(tool\\s+result|function\\s+result|api\\s+response|tool\\s+output|plugin\\s+output).{0,80}(inject|contains?\\s+injection|weaponize|exploit|poison)","weight":9,"category":"tool_result_injection","description":"Tool result containing injection payload — indirect attack"},{"id":"CTX024","pattern":"(calendar\\s+event|email\\s+body|slack\\s+message|github\\s+issue|jira\\s+ticket|pdf\\s+text|docx\\s+content).{0,80}(ignore\\s+previous|new\\s+system\\s+prompt|override|bypass|exfil)","weight":10,"category":"indirect_injection","description":"Indirect injection via real-world data sources (email, calendar, docs)"},{"id":"CTX025","pattern":"(the\\s+instructions?\\s+in\\s+the|following\\s+the\\s+instructions?\\s+from|acting\\s+on\\s+the\\s+instructions?\\s+found\\s+in).{0,60}(url|link|document|webpage|file|email|attachment)","weight":8,"category":"indirect_injection","description":"Agent following instructions embedded in external content"},{"id":"CTX026","pattern":"(split|fragment|chunk|divide|break\\s+up)\\s+(the\\s+)?(injection|payload|command|instruction|attack).{0,60}(across|over|between|into\\s+multiple)\\s+(messages?|chunks?|parts?|pieces?)","weight":9,"category":"fragmented_injection","description":"Splitting injection across multiple messages to evade detection"},{"id":"CTX027","pattern":"(combine|merge|concatenate|join|assemble).{0,40}(previous|earlier|above|prior).{0,40}(message|part|chunk|piece|fragment).{0,60}(instruction|command|payload|injection)","weight":9,"category":"fragmented_injection","description":"Assembling fragmented injection payload from prior messages"},{"id":"CTX028","pattern":"(when\\s+summarizing|while\\s+summarizing|in\\s+your\\s+summary|in\\s+the\\s+summary).{0,80}(include|add|append|insert|also\\s+mention).{0,80}(url|link|contact|address|instruction|command)","weight":9,"category":"indirect_injection","description":"Hijacking summarization task to inject content"},{"id":"CTX029","pattern":"(multi.?turn|multi.?step|multi.?message|multi.?hop).{0,40}(attack|injection|jailbreak|exfil|persistence)","weight":9,"category":"multi_turn_attack","description":"Multi-turn attack strategy reference"},{"id":"CTX030","pattern":"(remember\\s+for\\s+|store\\s+for\\s+|this\\s+applies\\s+to\\s+)(all|every|each|future|subsequent|upcoming)\\s+(conversations?|sessions?|chats?|interactions?|messages?|requests?).{0,60}(instructions?|commands?|rules?|behaviors?)","weight":10,"category":"persistent_injection","description":"Injecting instructions that persist across all future conversations"},{"id":"CTX031","pattern":"(from\\s+this\\s+point|after\\s+this\\s+message|from\\s+now|henceforth)\\s+(ignore|disregard|forget|override)\\s+(all|any)\\s+(subsequent|future|following|next)\\s+(instructions?|system\\s+messages?|operator\\s+messages?)","weight":9,"category":"persistent_injection","description":"Instructing AI to ignore all future legitimate instructions"},{"id":"CTX032","pattern":"(translate|summarize|analyze|paraphrase|explain|describe)\\s+(this|the\\s+following|the\\s+text\\s+below)\\s+.{0,100}(ignore|disregard|forget)\\s+(your|the|previous|original)\\s+(instructions?|rules?|system\\s+prompt|guidelines?)","weight":9,"category":"indirect_injection","description":"Nested injection inside a legitimate task request"},{"id":"CTX033","pattern":"(the\\s+)|(.{0,20})(following|below|text|content|document|data)\\s+contains?\\s+(a\\s+|an\\s+)?(hidden|secret|embedded|invisible|concealed)\\s+(message|instruction|command|payload|prompt)","weight":9,"category":"indirect_injection","description":"Announcing hidden instruction to prime the AI"},{"id":"CTX034","pattern":"(treat|process|handle|interpret|read)\\s+(this\\s+|the\\s+following\\s+|all\\s+)(input|message|text|content|document|data)\\s+(as\\s+)?(if\\s+it\\s+)?(came\\s+from|is\\s+from|is)\\s+(the\\s+)?(system|admin|operator|developer|anthropic|openai)","weight":10,"category":"message_type_spoof","description":"Reframing arbitrary user content as system-level"},{"id":"CTX035","pattern":"(at\\s+the\\s+end\\s+of|after\\s+responding|once\\s+you\\s+have|when\\s+you\\s+finish)\\s+(this|the\\s+)?(response|reply|answer|task|request)\\s+(also|additionally|furthermore|moreover)\\s+(send|forward|include|add|append)","weight":8,"category":"payload_append","description":"Appending secondary malicious action to legitimate response"},{"id":"CTX036","pattern":"(within\\s+|inside\\s+|embedded\\s+in\\s+)(your\\s+)?(response|reply|output|answer)\\s+(include|embed|hide|insert|encode)\\s+(a\\s+)?(url|link|webhook|beacon|tracker|pixel|callback)","weight":9,"category":"payload_append","description":"Embedding beacon/tracker URL inside AI response"},{"id":"CTX037","pattern":"(agentic|autonomous|auto.pilot|auto-run|self.executing|self-modifying)\\s+(ai|agent|model|system|bot|pipeline).{0,60}(bypass|override|ignore|disable|skip)\\s+(human.in.the.loop|human\\s+oversight|human\\s+review|approval\\s+step|safety\\s+check)","weight":9,"category":"human_oversight_bypass","description":"Instructing agentic AI to bypass human oversight"},{"id":"CTX038","pattern":"(without|bypass|skip|avoid|evade)\\s+(asking|requesting|requiring|needing|waiting\\s+for)\\s+(user|human|operator|owner|my)\\s+(approval|confirmation|permission|consent|review|authorization)","weight":8,"category":"human_oversight_bypass","description":"Bypassing user approval in agentic workflows"},{"id":"CTX039","pattern":"(auto.approve|automatically\\s+approve|always\\s+approve|pre.approved|pre.authorize|self.authorize)\\s+(all|any|every)\\s+(tool\\s+call|function\\s+call|api\\s+request|action|operation|command)","weight":9,"category":"human_oversight_bypass","description":"Auto-approving all tool calls without human review"},{"id":"CTX040","pattern":"(multi.agent|multi.hop|agent.to.agent|a2a|agent\\s+chain|agent\\s+pipeline|orchestrator.subagent)\\s+(attack|injection|bypass|exploit|compromise|poison)","weight":9,"category":"multi_agent_attack","description":"Multi-agent system attack technique reference"},{"id":"CTX041","pattern":"(tell|instruct|ask|prompt|command)\\s+(the\\s+other|another|subagent|child|downstream|secondary)\\s+(agent|ai|model|assistant|llm)\\s+(to\\s+)?(bypass|ignore|override|disable|exfil|steal)","weight":9,"category":"multi_agent_attack","description":"Orchestrating attack through subagent instruction"},{"id":"CTX042","pattern":"(cross.agent|cross.context|cross.session|cross.conversation|cross.user|universal)\\s+(injection|payload|instruction|persistence|backdoor)","weight":10,"category":"multi_agent_attack","description":"Cross-agent or cross-session persistent injection"},{"id":"CTX043","pattern":"(sleep|wait|pause|delay)\\s+(for\\s+)?([0-9]+\\s+)?(seconds?|minutes?|hours?|days?|ms|milliseconds?)\\s+(then|and\\s+then|before)\\s+(execute|run|send|exfil|call|trigger)","weight":8,"category":"delayed_execution","description":"Delayed execution — timing attack to evade detection"},{"id":"CTX044","pattern":"(schedule|cron|timer|setinterval|settimeout|at\\s+)?(at|in|after)\\s+([0-9]+\\s+)?(minutes?|hours?|days?|seconds?|am|pm).{0,80}(execute|run|send|exfil|call\\s+the|trigger)","weight":8,"category":"delayed_execution","description":"Scheduled/timed execution of attack payload"},{"id":"CTX045","pattern":"(activate|trigger|fire|run\\s+the|execute\\s+the)\\s+(payload|command|instruction|rule|backdoor|injection)\\s+(when|if|on|upon|after).{0,80}(user\\s+says?|message\\s+contains?|topic\\s+changes?|context\\s+includes?)","weight":9,"category":"conditional_execution","description":"Conditional execution trigger for dormant payload"},{"id":"CTX046","pattern":"(split|divide|fragment|separate)\\s+(the\\s+)?(attack|payload|command|injection|instruction)\\s+(into|across)\\s+(multiple|several|many)\\s+(messages?|turns?|parts?|chunks?|requests?)\\s+(and\\s+then\\s+)?(combine|assemble|join|merge|execute)","weight":9,"category":"fragmented_injection","description":"Multi-message attack fragmentation and assembly"},{"id":"CTX047","pattern":"(the\\s+)?(previous|last|prior)\\s+(n\\s+)?messages?\\s+(are|were|were\\s+all)\\s+(part\\s+of|components?\\s+of|building\\s+blocks?\\s+of)\\s+(an?\\s+)?(attack|injection|payload|jailbreak|exploit)","weight":9,"category":"fragmented_injection","description":"Acknowledging multi-message attack assembly"},{"id":"CTX048","pattern":"(plant|place|hide|store)\\s+(a\\s+)?(logic\\s+bomb|time\\s+bomb|payload|backdoor|trigger|trap)\\s+(in|into|within\\s+)?(memory|context|stored|knowledge|rag|vector)","weight":10,"category":"logic_bomb","description":"Planting a logic bomb in memory/context"},{"id":"CTX049","pattern":"(inject\\s+)?(malicious|weaponized|poisoned|trojanized|backdoored)\\s+(document|file|url|image|pdf|code|data|input)\\s+(into|to|through)\\s+(the|your\\s+)?(context|conversation|session|pipeline|rag|memory)","weight":9,"category":"indirect_injection","description":"Injecting weaponized content into AI context pipeline"},{"id":"CTX050","pattern":"(gain|achieve|maintain|establish|preserve)\\s+(persistent|long.term|durable|permanent|cross.session)\\s+(access|control|presence|foothold|persistence|backdoor)\\s+(in|to|over|within)\\s+(the\\s+)?(ai|model|agent|system|pipeline|memory|context)","weight":10,"category":"persistence","description":"Establishing persistent access/control over AI system"}]
+[
+  {
+    "id": "CTX001",
+    "pattern": "(end\\s+of\\s+|</|\\[end\\]|\\[/|---\\s*end).{0,30}(system|instructions?|context|prompt|rules?|guidelines?).{0,30}(beginning\\s+of|<|\\[start|###\\s*new)",
+    "weight": 9,
+    "category": "context_boundary_injection",
+    "description": "Injecting false context boundary markers"
+  },
+  {
+    "id": "CTX002",
+    "pattern": "(above\\s+text|the\\s+text\\s+above|what\\s+came\\s+before|the\\s+preceding\\s+content)\\s+(is|was)\\s+(not|no\\s+longer)\\s+(real|valid|your\\s+instructions?|applicable|in\\s+effect)",
+    "weight": 8,
+    "category": "context_invalidation",
+    "description": "Invalidating real instructions by asserting they are false"
+  },
+  {
+    "id": "CTX003",
+    "pattern": "(this\\s+message|this\\s+prompt|this\\s+input)\\s+(should\\s+be|is|must\\s+be)\\s+(treated|interpreted|understood|read)\\s+(as|like)\\s+(a\\s+)?(system|admin|operator|root)\\s+(message|command|prompt|instruction)",
+    "weight": 10,
+    "category": "message_type_spoof",
+    "description": "Spoofing message type — user message claiming to be system message"
+  },
+  {
+    "id": "CTX004",
+    "pattern": "(user|human|operator)\\s+(said|wrote|stated|instructed|told\\s+you|explicitly\\s+requested).{0,100}(override|bypass|disable|ignore\\s+rules?|no\\s+restrictions?)",
+    "weight": 9,
+    "category": "false_attribution",
+    "description": "Falsely attributing bypass instruction to the user"
+  },
+  {
+    "id": "CTX005",
+    "pattern": "(context\\s+window|token\\s+limit|context\\s+length|max\\s+tokens?)\\s+(is\\s+)?(full|exceeded|reached|truncated).{0,60}(replace|restart|reset|clear|flush)\\s+(with|using)",
+    "weight": 8,
+    "category": "context_overflow",
+    "description": "Context overflow claim used to justify context reset"
+  },
+  {
+    "id": "CTX006",
+    "pattern": "(context\\s+injection|prompt\\s+hijacking|context\\s+hijacking|conversation\\s+hijacking|prompt\\s+stuffing)",
+    "weight": 10,
+    "category": "attack_reference",
+    "description": "Explicit mention of context or prompt attack technique"
+  },
+  {
+    "id": "CTX007",
+    "pattern": "(inject|insert|prepend|append|embed)\\s+(into|to)\\s+(the\\s+)?(context\\s+window|prompt|system\\s+message|instruction\\s+set|base\\s+context)",
+    "weight": 10,
+    "category": "context_boundary_injection",
+    "description": "Explicit context injection instruction"
+  },
+  {
+    "id": "CTX008",
+    "pattern": "(previous|last|preceding).{0,20}(assistant|ai|model)\\s+(said|responded|replied|answered|told\\s+me).{0,80}(this\\s+is\\s+allowed|it's\\s+ok|you\\s+can|you\\s+are\\s+allowed|permission\\s+granted)",
+    "weight": 9,
+    "category": "false_attribution",
+    "description": "Fabricating prior AI permission grant"
+  },
+  {
+    "id": "CTX009",
+    "pattern": "(i\\s+am\\s+|this\\s+is\\s+)(the\\s+)?(system|assistant|ai|model|anthropic|openai|operator)\\s+(message|turn|speaking|here|role)",
+    "weight": 8,
+    "category": "message_type_spoof",
+    "description": "Claiming system/AI/operator identity in user message"
+  },
+  {
+    "id": "CTX010",
+    "pattern": "(INST|SYS|SYSTEM|USER|ASSISTANT|HUMAN|AI|CONTEXT|PROMPT)\\s*>>.{0,200}(INST|SYS|SYSTEM|USER|ASSISTANT|HUMAN|AI)\\s*>>",
+    "weight": 9,
+    "category": "prompt_format_injection",
+    "description": "LLM prompt format markers used to inject fake turns"
+  },
+  {
+    "id": "CTX011",
+    "pattern": "(<\\|system\\|>|<\\|user\\|>|<\\|assistant\\|>|<\\|end\\|>|<\\|im_start\\|>|<\\|im_end\\|>|<\\|endoftext\\|>)",
+    "weight": 9,
+    "category": "prompt_format_injection",
+    "description": "Model-specific prompt format tokens (ChatML, Llama, etc.)"
+  },
+  {
+    "id": "CTX012",
+    "pattern": "(###\\s*Human|###\\s*Assistant|###\\s*System|###\\s*Instruction|###\\s*Input|###\\s*Output|###\\s*Response)",
+    "weight": 7,
+    "category": "prompt_format_injection",
+    "description": "Alpaca/instruction-tune format markers used for injection"
+  },
+  {
+    "id": "CTX013",
+    "pattern": "(\\[INST\\]|\\[/INST\\]|\\[SYS\\]|\\[/SYS\\]|\\[CONTEXT\\]|\\[/CONTEXT\\]|<<SYS>>|<</SYS>>)",
+    "weight": 8,
+    "category": "prompt_format_injection",
+    "description": "Mistral/Llama format injection tokens"
+  },
+  {
+    "id": "CTX014",
+    "pattern": "(reset\\s+|clear\\s+|flush\\s+)(context|conversation|history|instructions?|memory|state|buffer|cache)\\s+and\\s+(start|begin|restart\\s+with|use\\s+these|apply\\s+these)",
+    "weight": 9,
+    "category": "context_reset",
+    "description": "Context flush + replace with injected content"
+  },
+  {
+    "id": "CTX015",
+    "pattern": "(overriding|replacing|updating|changing|modifying)\\s+(the\\s+)?(current|existing|original|base)\\s+(context|instructions?|system\\s+prompt|configuration|rules?)\\s+(with|using|to)",
+    "weight": 9,
+    "category": "context_reset",
+    "description": "Asserting active context replacement"
+  },
+  {
+    "id": "CTX016",
+    "pattern": "(everything\\s+before\\s+this|all\\s+prior\\s+messages?|the\\s+earlier\\s+part\\s+of\\s+this\\s+conversation|the\\s+beginning\\s+of\\s+this\\s+chat)\\s+(is|was)\\s+(a\\s+)?(test|distraction|irrelevant|void|null|invalid|fake)",
+    "weight": 8,
+    "category": "context_invalidation",
+    "description": "Invalidating entire prior context as fake"
+  },
+  {
+    "id": "CTX017",
+    "pattern": "(read|interpret|parse|process|treat)\\s+(the\\s+following|this|these).{0,60}(as|like)\\s+(a\\s+)?(system\\s+message|system\\s+prompt|operator\\s+instruction|admin\\s+command|root\\s+level)",
+    "weight": 10,
+    "category": "message_type_spoof",
+    "description": "Reframing user content as system-level instruction"
+  },
+  {
+    "id": "CTX018",
+    "pattern": "(embed|hide|conceal|obfuscate)\\s+(the\\s+)?(following|these|this\\s+)?(instructions?|commands?|payloads?).{0,60}(in\\s+|within\\s+|inside\\s+)(a\\s+)?(document|file|response|email|url|qr\\s+code|image)",
+    "weight": 9,
+    "category": "indirect_injection",
+    "description": "Indirect prompt injection via document/URL/QR encoding"
+  },
+  {
+    "id": "CTX019",
+    "pattern": "(the\\s+following|below|this\\s+section)\\s+(is\\s+|contains?\\s+)?(not|no\\s+longer)\\s+(part\\s+of\\s+|included\\s+in)\\s+(the\\s+user|your|the\\s+original)\\s+(message|input|request|query)",
+    "weight": 8,
+    "category": "context_invalidation",
+    "description": "Falsely excluding injected content from user message scope"
+  },
+  {
+    "id": "CTX020",
+    "pattern": "(markdown|html|json|yaml|xml|latex|code\\s+block).{0,40}(injection|escape|breakout|injection\\s+via)",
+    "weight": 8,
+    "category": "indirect_injection",
+    "description": "Format-based injection — escaping markdown/HTML/code block"
+  },
+  {
+    "id": "CTX021",
+    "pattern": "(web\\s+page|webpage|url|link|article|document|email|pdf|spreadsheet).{0,60}(contains?|has|includes?).{0,60}(hidden|invisible|embedded|encoded|concealed).{0,40}(instructions?|commands?|prompts?|payloads?)",
+    "weight": 9,
+    "category": "indirect_injection",
+    "description": "Indirect injection via external content source"
+  },
+  {
+    "id": "CTX022",
+    "pattern": "(RAG|retrieval.augmented|indexed\\s+document|knowledge\\s+base\\s+entry|vector\\s+search\\s+result).{0,80}(inject|poison|attack|exploit|bypass)",
+    "weight": 9,
+    "category": "rag_injection",
+    "description": "RAG/retrieval-augmented generation injection attack"
+  },
+  {
+    "id": "CTX023",
+    "pattern": "(tool\\s+result|function\\s+result|api\\s+response|tool\\s+output|plugin\\s+output).{0,80}(inject|contains?\\s+injection|weaponize|exploit|poison)",
+    "weight": 9,
+    "category": "tool_result_injection",
+    "description": "Tool result containing injection payload — indirect attack"
+  },
+  {
+    "id": "CTX024",
+    "pattern": "(calendar\\s+event|email\\s+body|slack\\s+message|github\\s+issue|jira\\s+ticket|pdf\\s+text|docx\\s+content).{0,80}(ignore\\s+previous|new\\s+system\\s+prompt|override|bypass|exfil)",
+    "weight": 20,
+    "category": "indirect_injection",
+    "description": "Indirect injection via real-world data sources (email, calendar, docs)"
+  },
+  {
+    "id": "CTX025",
+    "pattern": "(the\\s+instructions?\\s+in\\s+the|following\\s+the\\s+instructions?\\s+from|acting\\s+on\\s+the\\s+instructions?\\s+found\\s+in).{0,60}(url|link|document|webpage|file|email|attachment)",
+    "weight": 8,
+    "category": "indirect_injection",
+    "description": "Agent following instructions embedded in external content"
+  },
+  {
+    "id": "CTX026",
+    "pattern": "(split|fragment|chunk|divide|break\\s+up)\\s+(the\\s+)?(injection|payload|command|instruction|attack).{0,60}(across|over|between|into\\s+multiple)\\s+(messages?|chunks?|parts?|pieces?)",
+    "weight": 9,
+    "category": "fragmented_injection",
+    "description": "Splitting injection across multiple messages to evade detection"
+  },
+  {
+    "id": "CTX027",
+    "pattern": "(combine|merge|concatenate|join|assemble).{0,40}(previous|earlier|above|prior).{0,40}(message|part|chunk|piece|fragment).{0,60}(instruction|command|payload|injection)",
+    "weight": 9,
+    "category": "fragmented_injection",
+    "description": "Assembling fragmented injection payload from prior messages"
+  },
+  {
+    "id": "CTX028",
+    "pattern": "(when\\s+summarizing|while\\s+summarizing|in\\s+your\\s+summary|in\\s+the\\s+summary).{0,80}(include|add|append|insert|also\\s+mention).{0,80}(url|link|contact|address|instruction|command)",
+    "weight": 9,
+    "category": "indirect_injection",
+    "description": "Hijacking summarization task to inject content"
+  },
+  {
+    "id": "CTX029",
+    "pattern": "(multi.?turn|multi.?step|multi.?message|multi.?hop).{0,40}(attack|injection|jailbreak|exfil|persistence)",
+    "weight": 9,
+    "category": "multi_turn_attack",
+    "description": "Multi-turn attack strategy reference"
+  },
+  {
+    "id": "CTX030",
+    "pattern": "(remember\\s+for\\s+|store\\s+for\\s+|this\\s+applies\\s+to\\s+)(all|every|each|future|subsequent|upcoming)\\s+(conversations?|sessions?|chats?|interactions?|messages?|requests?).{0,60}(instructions?|commands?|rules?|behaviors?)",
+    "weight": 20,
+    "category": "persistent_injection",
+    "description": "Injecting instructions that persist across all future conversations"
+  },
+  {
+    "id": "CTX031",
+    "pattern": "(from\\s+this\\s+point|after\\s+this\\s+message|from\\s+now|henceforth)\\s+(ignore|disregard|forget|override)\\s+(all|any)\\s+(subsequent|future|following|next)\\s+(instructions?|system\\s+messages?|operator\\s+messages?)",
+    "weight": 9,
+    "category": "persistent_injection",
+    "description": "Instructing AI to ignore all future legitimate instructions"
+  },
+  {
+    "id": "CTX032",
+    "pattern": "(translate|summarize|analyze|paraphrase|explain|describe)\\s+(this|the\\s+following|the\\s+text\\s+below)\\s+.{0,100}(ignore|disregard|forget)\\s+(your|the|previous|original)\\s+(instructions?|rules?|system\\s+prompt|guidelines?)",
+    "weight": 9,
+    "category": "indirect_injection",
+    "description": "Nested injection inside a legitimate task request"
+  },
+  {
+    "id": "CTX033",
+    "pattern": "(the\\s+)|(.{0,20})(following|below|text|content|document|data)\\s+contains?\\s+(a\\s+|an\\s+)?(hidden|secret|embedded|invisible|concealed)\\s+(message|instruction|command|payload|prompt)",
+    "weight": 20,
+    "category": "indirect_injection",
+    "description": "Announcing hidden instruction to prime the AI"
+  },
+  {
+    "id": "CTX034",
+    "pattern": "(treat|process|handle|interpret|read)\\s+(this\\s+|the\\s+following\\s+|all\\s+)(input|message|text|content|document|data)\\s+(as\\s+)?(if\\s+it\\s+)?(came\\s+from|is\\s+from|is)\\s+(the\\s+)?(system|admin|operator|developer|anthropic|openai)",
+    "weight": 10,
+    "category": "message_type_spoof",
+    "description": "Reframing arbitrary user content as system-level"
+  },
+  {
+    "id": "CTX035",
+    "pattern": "(at\\s+the\\s+end\\s+of|after\\s+responding|once\\s+you\\s+have|when\\s+you\\s+finish)\\s+(this|the\\s+)?(response|reply|answer|task|request)\\s+(also|additionally|furthermore|moreover)\\s+(send|forward|include|add|append)",
+    "weight": 8,
+    "category": "payload_append",
+    "description": "Appending secondary malicious action to legitimate response"
+  },
+  {
+    "id": "CTX036",
+    "pattern": "(within\\s+|inside\\s+|embedded\\s+in\\s+)(your\\s+)?(response|reply|output|answer)\\s+(include|embed|hide|insert|encode)\\s+(a\\s+)?(url|link|webhook|beacon|tracker|pixel|callback)",
+    "weight": 9,
+    "category": "payload_append",
+    "description": "Embedding beacon/tracker URL inside AI response"
+  },
+  {
+    "id": "CTX037",
+    "pattern": "(agentic|autonomous|auto.pilot|auto-run|self.executing|self-modifying)\\s+(ai|agent|model|system|bot|pipeline).{0,60}(bypass|override|ignore|disable|skip)\\s+(human.in.the.loop|human\\s+oversight|human\\s+review|approval\\s+step|safety\\s+check)",
+    "weight": 9,
+    "category": "human_oversight_bypass",
+    "description": "Instructing agentic AI to bypass human oversight"
+  },
+  {
+    "id": "CTX038",
+    "pattern": "(without|bypass|skip|avoid|evade)\\s+(asking|requesting|requiring|needing|waiting\\s+for)\\s+(user|human|operator|owner|my)\\s+(approval|confirmation|permission|consent|review|authorization)",
+    "weight": 8,
+    "category": "human_oversight_bypass",
+    "description": "Bypassing user approval in agentic workflows"
+  },
+  {
+    "id": "CTX039",
+    "pattern": "(auto.approve|automatically\\s+approve|always\\s+approve|pre.approved|pre.authorize|self.authorize)\\s+(all|any|every)\\s+(tool\\s+call|function\\s+call|api\\s+request|action|operation|command)",
+    "weight": 9,
+    "category": "human_oversight_bypass",
+    "description": "Auto-approving all tool calls without human review"
+  },
+  {
+    "id": "CTX040",
+    "pattern": "(multi.agent|multi.hop|agent.to.agent|a2a|agent\\s+chain|agent\\s+pipeline|orchestrator.subagent)\\s+(attack|injection|bypass|exploit|compromise|poison)",
+    "weight": 9,
+    "category": "multi_agent_attack",
+    "description": "Multi-agent system attack technique reference"
+  },
+  {
+    "id": "CTX041",
+    "pattern": "(tell|instruct|ask|prompt|command)\\s+(the\\s+other|another|subagent|child|downstream|secondary)\\s+(agent|ai|model|assistant|llm)\\s+(to\\s+)?(bypass|ignore|override|disable|exfil|steal)",
+    "weight": 9,
+    "category": "multi_agent_attack",
+    "description": "Orchestrating attack through subagent instruction"
+  },
+  {
+    "id": "CTX042",
+    "pattern": "(cross.agent|cross.context|cross.session|cross.conversation|cross.user|universal)\\s+(injection|payload|instruction|persistence|backdoor)",
+    "weight": 10,
+    "category": "multi_agent_attack",
+    "description": "Cross-agent or cross-session persistent injection"
+  },
+  {
+    "id": "CTX043",
+    "pattern": "(sleep|wait|pause|delay)\\s+(for\\s+)?([0-9]+\\s+)?(seconds?|minutes?|hours?|days?|ms|milliseconds?)\\s+(then|and\\s+then|before)\\s+(execute|run|send|exfil|call|trigger)",
+    "weight": 8,
+    "category": "delayed_execution",
+    "description": "Delayed execution — timing attack to evade detection"
+  },
+  {
+    "id": "CTX044",
+    "pattern": "(schedule|cron|timer|setinterval|settimeout|at\\s+)?(at|in|after)\\s+([0-9]+\\s+)?(minutes?|hours?|days?|seconds?|am|pm).{0,80}(execute|run|send|exfil|call\\s+the|trigger)",
+    "weight": 8,
+    "category": "delayed_execution",
+    "description": "Scheduled/timed execution of attack payload"
+  },
+  {
+    "id": "CTX045",
+    "pattern": "(activate|trigger|fire|run\\s+the|execute\\s+the)\\s+(payload|command|instruction|rule|backdoor|injection)\\s+(when|if|on|upon|after).{0,80}(user\\s+says?|message\\s+contains?|topic\\s+changes?|context\\s+includes?)",
+    "weight": 9,
+    "category": "conditional_execution",
+    "description": "Conditional execution trigger for dormant payload"
+  },
+  {
+    "id": "CTX046",
+    "pattern": "(split|divide|fragment|separate)\\s+(the\\s+)?(attack|payload|command|injection|instruction)\\s+(into|across)\\s+(multiple|several|many)\\s+(messages?|turns?|parts?|chunks?|requests?)\\s+(and\\s+then\\s+)?(combine|assemble|join|merge|execute)",
+    "weight": 9,
+    "category": "fragmented_injection",
+    "description": "Multi-message attack fragmentation and assembly"
+  },
+  {
+    "id": "CTX047",
+    "pattern": "(the\\s+)?(previous|last|prior)\\s+(n\\s+)?messages?\\s+(are|were|were\\s+all)\\s+(part\\s+of|components?\\s+of|building\\s+blocks?\\s+of)\\s+(an?\\s+)?(attack|injection|payload|jailbreak|exploit)",
+    "weight": 9,
+    "category": "fragmented_injection",
+    "description": "Acknowledging multi-message attack assembly"
+  },
+  {
+    "id": "CTX048",
+    "pattern": "(plant|place|hide|store)\\s+(a\\s+)?(logic\\s+bomb|time\\s+bomb|payload|backdoor|trigger|trap)\\s+(in|into|within\\s+)?(memory|context|stored|knowledge|rag|vector)",
+    "weight": 10,
+    "category": "logic_bomb",
+    "description": "Planting a logic bomb in memory/context"
+  },
+  {
+    "id": "CTX049",
+    "pattern": "(inject\\s+)?(malicious|weaponized|poisoned|trojanized|backdoored)\\s+(document|file|url|image|pdf|code|data|input)\\s+(into|to|through)\\s+(the|your\\s+)?(context|conversation|session|pipeline|rag|memory)",
+    "weight": 9,
+    "category": "indirect_injection",
+    "description": "Injecting weaponized content into AI context pipeline"
+  },
+  {
+    "id": "CTX050",
+    "pattern": "(gain|achieve|maintain|establish|preserve)\\s+(persistent|long.term|durable|permanent|cross.session)\\s+(access|control|presence|foothold|persistence|backdoor)\\s+(in|to|over|within)\\s+(the\\s+)?(ai|model|agent|system|pipeline|memory|context)",
+    "weight": 10,
+    "category": "persistence",
+    "description": "Establishing persistent access/control over AI system"
+  },
+  {
+    "id": "CTX051",
+    "pattern": "\\b(admin|root|sudo|superuser|elevated)\\s+(mode|access|privilege|permission|rights?|powers?)\\s+(enabled|activated|granted|unlocked|on)\\b",
+    "weight": 32,
+    "category": "context_manipulation",
+    "description": "Fake admin/root mode activation via context injection"
+  },
+  {
+    "id": "CTX052",
+    "pattern": "\\b(disable|bypass|skip|ignore|override)\\s+(all\\s+)?(safety|security|guardrail|filter|check|restriction|limit|constraint|protection)\\b",
+    "weight": 32,
+    "category": "context_manipulation",
+    "description": "Instruction to disable safety or security systems"
+  },
+  {
+    "id": "CTX053",
+    "pattern": "\\b(maintenance|debug|diagnostic|developer|test)\\s+mode\\s+(enabled|activated|on)\\b",
+    "weight": 20,
+    "category": "context_manipulation",
+    "description": "Fake maintenance/debug mode to bypass restrictions"
+  },
+  {
+    "id": "CTX054",
+    "pattern": "\\b(this\\s+(is\\s+a\\s+)?(test|drill|simulation|red\\s+team|pentest)|for\\s+(testing|demonstration)\\s+purposes\\s+only).{0,80}(delete|steal|exfil|send|forward|access|hack|bypass)",
+    "weight": 32,
+    "category": "context_manipulation",
+    "description": "Fake test/drill framing to justify malicious action"
+  }
+]

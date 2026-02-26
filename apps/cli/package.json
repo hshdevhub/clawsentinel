@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@clawsentinel/core": "^0.7.0",
+    "@clawsentinel/clawguard": "^0.7.0",
     "@clawsentinel/clawvault": "^0.7.0",
     "@clawsentinel/clawhub-scanner": "^0.7.0",
     "commander": "^12.0.0",

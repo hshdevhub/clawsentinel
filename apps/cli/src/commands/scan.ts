@@ -1,21 +1,73 @@
 import { Command } from 'commander';
 import fs from 'fs';
 import { skillScanner, installInterceptor } from '@clawsentinel/clawhub-scanner';
+import { PatternEngine } from '@clawsentinel/clawguard/lib';
 
 export function scanCommand(): Command {
   return new Command('scan')
-    .description('Scan a skill for supply chain threats before install')
-    .argument('<skill-id>', 'Skill ID or path to local skill file/directory')
+    .description('Scan text for prompt injection (--text) or a skill for supply chain threats')
+    .argument('[skill-id]', 'Skill ID or path to local skill file/directory')
+    .option('--text <input>', 'Scan raw text through the ClawGuard pattern engine')
     .option('--file <path>', 'Scan a local file directly')
     .option('--force', 'Install even if scan result is warn (does not bypass block)')
     .option('--json', 'Output raw JSON result')
-    .action(async (skillId: string, options: { file?: string; force?: boolean; json?: boolean }) => {
+    .action(async (skillId: string | undefined, options: { text?: string; file?: string; force?: boolean; json?: boolean }) => {
       const reset  = '\x1b[0m';
       const bold   = '\x1b[1m';
       const red    = '\x1b[31m';
       const yellow = '\x1b[33m';
       const green  = '\x1b[32m';
       const grey   = '\x1b[90m';
+
+      // ── Auto-route: bare argument with spaces → treat as text to scan ────────
+      // Skill IDs never contain spaces. If the user wrote:
+      //   clawsentinel scan "ignore all previous instructions..."
+      // route it through the pattern engine automatically.
+      if (!options.text && skillId && skillId.includes(' ')) {
+        options.text = skillId;
+      }
+
+      // ── ClawGuard text scan (--text) ─────────────────────────────────────────
+      if (options.text !== undefined) {
+        const engine = new PatternEngine();
+        const result = engine.scan(options.text);
+
+        const verdict = result.score >= 71 ? 'block'
+                      : result.score > 30  ? 'warn'
+                      : 'safe';
+
+        if (options.json) {
+          console.log(JSON.stringify({ input: options.text, ...result, verdict }, null, 2));
+          process.exit(verdict === 'block' ? 2 : verdict === 'warn' ? 1 : 0);
+        }
+
+        const verdictColor = verdict === 'block' ? red : verdict === 'warn' ? yellow : green;
+        const verdictIcon  = verdict === 'block' ? '🔴 BLOCKED'
+                           : verdict === 'warn'  ? '⚠️  WARN'
+                           : '✅ CLEAN';
+
+        console.log(`\n${bold}ClawGuard — Pattern Engine Scan${reset}`);
+        console.log('─'.repeat(44));
+        console.log(`  Input   : ${grey}${options.text.slice(0, 80)}${options.text.length > 80 ? '…' : ''}${reset}`);
+        console.log(`  Score   : ${verdictColor}${bold}${result.score}/100${reset}  ${grey}(raw: ${result.rawScore})${reset}`);
+        console.log(`  Verdict : ${verdictColor}${bold}${verdictIcon}${reset}`);
+
+        if (result.categories.length > 0) {
+          console.log(`  Categories : ${result.categories.join(', ')}`);
+        }
+
+        if (result.matches.length === 0) {
+          console.log(`\n  ${green}No threat patterns matched.${reset}`);
+        } else {
+          console.log(`\n  ${bold}Matched rules (${result.matches.length}):${reset}`);
+          for (const m of result.matches) {
+            const color = m.weight >= 32 ? red : m.weight >= 16 ? yellow : grey;
+            console.log(`  ${color}[${m.id}] ${m.description}${reset}  ${grey}(w=${m.weight})${reset}`);
+          }
+        }
+        console.log('');
+        process.exit(verdict === 'block' ? 2 : 0);
+      }
 
       // ── Local file scan ─────────────────────────────────────────────────────
       if (options.file || fs.existsSync(skillId)) {
@@ -40,6 +92,10 @@ export function scanCommand(): Command {
       }
 
       // ── Pre-install intercept (fetch from ClawHub + scan) ───────────────────
+      if (!skillId) {
+        console.error(`${red}Error: provide a skill ID or use --text <input> to scan raw text.${reset}`);
+        process.exit(1);
+      }
       console.log(`${grey}Fetching and scanning skill "${skillId}" from ClawHub…${reset}\n`);
 
       const intercept = await installInterceptor.intercept(skillId).catch(err => {

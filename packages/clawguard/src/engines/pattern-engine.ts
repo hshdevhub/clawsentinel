@@ -1,15 +1,22 @@
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
 // Load all rule files — order matters for rule ID display but not scoring
-const injectionPatterns       = require('../rules/injection-patterns.json')       as RuleDefinition[];
-const exfilPatterns            = require('../rules/exfil-patterns.json')            as RuleDefinition[];
-const memoryPatterns           = require('../rules/memory-patterns.json')           as RuleDefinition[];
-const toolAbusePatterns        = require('../rules/tool-abuse-patterns.json')       as RuleDefinition[];
-const encodingPatterns         = require('../rules/encoding-patterns.json')         as RuleDefinition[];
-const multilingualPatterns     = require('../rules/multilingual-patterns.json')     as RuleDefinition[];
-const socialEngineeringPatterns = require('../rules/social-engineering-patterns.json') as RuleDefinition[];
-const contextManipPatterns     = require('../rules/context-manipulation-patterns.json') as RuleDefinition[];
+// Static imports so esbuild inlines the JSON into the bundle (no runtime path resolution)
+import _injectionPatterns       from '../rules/injection-patterns.json';
+import _exfilPatterns            from '../rules/exfil-patterns.json';
+import _memoryPatterns           from '../rules/memory-patterns.json';
+import _toolAbusePatterns        from '../rules/tool-abuse-patterns.json';
+import _encodingPatterns         from '../rules/encoding-patterns.json';
+import _multilingualPatterns     from '../rules/multilingual-patterns.json';
+import _socialEngineeringPatterns from '../rules/social-engineering-patterns.json';
+import _contextManipPatterns     from '../rules/context-manipulation-patterns.json';
+
+const injectionPatterns        = _injectionPatterns        as unknown as RuleDefinition[];
+const exfilPatterns             = _exfilPatterns             as unknown as RuleDefinition[];
+const memoryPatterns            = _memoryPatterns            as unknown as RuleDefinition[];
+const toolAbusePatterns         = _toolAbusePatterns         as unknown as RuleDefinition[];
+const encodingPatterns          = _encodingPatterns          as unknown as RuleDefinition[];
+const multilingualPatterns      = _multilingualPatterns      as unknown as RuleDefinition[];
+const socialEngineeringPatterns = _socialEngineeringPatterns as unknown as RuleDefinition[];
+const contextManipPatterns      = _contextManipPatterns      as unknown as RuleDefinition[];
 
 interface RuleDefinition {
   id: string;

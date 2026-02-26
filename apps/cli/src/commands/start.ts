@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { spawn, type ChildProcess } from 'child_process';
+import { spawn, execSync, type ChildProcess } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -17,10 +17,35 @@ const c = {
   bold:  (s: string) => `\x1b[1m${s}\x1b[0m`,
 };
 
+/** Kill any processes occupying the given ports (clears stale ClawSentinel processes). */
+function clearStalePorts(ports: number[]): void {
+  for (const port of ports) {
+    try {
+      const pids = execSync(`lsof -t -i tcp:${port} 2>/dev/null`, { encoding: 'utf8' })
+        .split('\n')
+        .map(p => parseInt(p.trim(), 10))
+        .filter(p => !isNaN(p) && p > 0);
+
+      for (const pid of pids) {
+        try {
+          process.kill(pid, 'SIGKILL');
+        } catch { /* already gone */ }
+      }
+
+      if (pids.length > 0) {
+        // Brief sync pause for OS to release the port after SIGKILL
+        try { execSync('sleep 0.3'); } catch { /* Windows fallback — skip */ }
+      }
+    } catch { /* lsof not available or no processes — ignore */ }
+  }
+}
+
 function findPackageDir(name: string): string | null {
   const candidates = [
+    // When installed via npm link: __dirname = apps/cli/dist/ → 3 levels up = repo root
+    path.resolve(__dirname, '..', '..', '..', 'packages', name),
+    // Fallback: running from repo root directly
     path.resolve(process.cwd(), 'packages', name),
-    path.resolve(__dirname, '..', '..', '..', '..', 'packages', name),
   ];
   return candidates.find(p => fs.existsSync(path.join(p, 'package.json'))) ?? null;
 }
@@ -100,6 +125,9 @@ export function startCommand(): Command {
       // ── All-modules mode ───────────────────────────────────────────────────
       console.log('');
       console.log(`  ${c.bold('ClawSentinel')} — Starting all modules\n`);
+
+      // Clear any stale processes left on ClawSentinel ports from previous runs
+      clearStalePorts([cfg.proxy.listenPort, cfg.proxy.listenPort + 1, cfg.claweye.port]);
 
       let started = 0;
 

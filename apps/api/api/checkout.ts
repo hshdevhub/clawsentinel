@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const baseUrl = process.env['API_BASE_URL'] ?? 'https://clawsentinel-api.vercel.app';
+  const baseUrl = process.env['API_BASE_URL'] ?? 'https://api.clawsentinel.dev';
 
   try {
     const stripe = getStripe();

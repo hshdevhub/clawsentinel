@@ -43,7 +43,7 @@ function markStatus(status: 'running' | 'stopped' | 'error') {
   } catch { /* DB may not be ready yet — non-fatal */ }
 }
 
-const API_BASE = process.env['CLAWSENTINEL_API_URL'] ?? 'https://clawsentinel-api.vercel.app';
+const API_BASE = process.env['CLAWSENTINEL_API_URL'] ?? 'https://api.clawsentinel.dev';
 const RENEWAL_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
 
 /**

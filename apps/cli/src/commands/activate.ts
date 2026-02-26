@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import { writePlan, getMachineId } from '@clawsentinel/core';
 
-const API_BASE = process.env['CLAWSENTINEL_API_URL'] ?? 'https://clawsentinel-api.vercel.app';
+const API_BASE = process.env['CLAWSENTINEL_API_URL'] ?? 'https://api.clawsentinel.dev';
 
 const c = {
   green:  (s: string) => `\x1b[32m${s}\x1b[0m`,

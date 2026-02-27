@@ -277,11 +277,48 @@ function escapeHtml(str) {
 
 injectBadges();
 
-// Re-run on SPA navigation — ClawHub changes URL without full page reload
+// ─── Lazy-load + SPA observer ─────────────────────────────────────────────────
+// Handles two cases:
+//   1. Lazy / infinite scroll — new skill cards added to DOM as user scrolls
+//   2. SPA navigation — ClawHub changes URL without a full page reload
+//
+// Strategy: debounce badge injection so rapid DOM mutations (e.g. 20 cards
+// appended at once during a scroll batch) only trigger one re-scan pass.
+// injectBadges() already skips cards that already have a badge, so it is safe
+// to call repeatedly — it only processes new cards.
+
+let _badgeTimer = null;
+
+function scheduleBadgeInject(delay = 400) {
+  if (_badgeTimer) clearTimeout(_badgeTimer);
+  _badgeTimer = setTimeout(() => {
+    _badgeTimer = null;
+    injectBadges();
+  }, delay);
+}
+
 let lastUrl = location.href;
-new MutationObserver(() => {
+
+new MutationObserver((mutations) => {
+  // Case 1: URL changed (SPA navigation) — allow extra time for new page to render
   if (location.href !== lastUrl) {
     lastUrl = location.href;
-    setTimeout(injectBadges, 700);
+    scheduleBadgeInject(700);
+    return;
+  }
+
+  // Case 2: New nodes added to DOM (lazy load / infinite scroll)
+  // Only re-scan when at least one added node contains meaningful content
+  // (avoids firing on spinner/placeholder mutations)
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (node.nodeType !== Node.ELEMENT_NODE) continue;
+      // Quick check: does the added subtree contain any text-bearing element?
+      if (node.querySelector('h2, h3, h4, p, [class*="card"], [class*="skill"]') ||
+          node.matches('h2, h3, h4, p, [class*="card"], [class*="skill"]')) {
+        scheduleBadgeInject(400);
+        return; // one trigger per mutation batch is enough
+      }
+    }
   }
 }).observe(document.body, { childList: true, subtree: true });

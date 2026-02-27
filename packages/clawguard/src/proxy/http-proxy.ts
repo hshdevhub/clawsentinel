@@ -43,6 +43,55 @@ export function startHTTPProxy(): http.Server {
       return;
     }
 
+    // ── CORS preflight — Chrome extension makes cross-origin requests ────
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '86400'
+      });
+      res.end();
+      return;
+    }
+
+    const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+
+    // ── /api/rules — live rule sync for Chrome extension ─────────────────
+    // Returns all platform pattern rules so the extension can use 292 rules
+    // instead of its 25-rule bundled subset. Called once per page load.
+    if (req.url === '/api/rules' && req.method === 'GET') {
+      const rules = patternEngine.getRules();
+      res.writeHead(200, CORS);
+      res.end(JSON.stringify(rules));
+      return;
+    }
+
+    // ── /api/scan — text scan for Chrome extension right-click feature ───
+    // Accepts POST { text: string }, returns full PatternEngine result.
+    if (req.url === '/api/scan' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+      req.on('end', () => {
+        try {
+          const { text } = JSON.parse(body) as { text?: string };
+          if (typeof text !== 'string' || text.length === 0) {
+            res.writeHead(400, CORS);
+            res.end(JSON.stringify({ error: 'Missing text field' }));
+            return;
+          }
+          const result = patternEngine.scan(text.slice(0, 50_000)); // cap at 50k chars
+          const verdict = result.score >= 71 ? 'block' : result.score > 30 ? 'warn' : 'safe';
+          res.writeHead(200, CORS);
+          res.end(JSON.stringify({ ...result, verdict }));
+        } catch {
+          res.writeHead(400, CORS);
+          res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+        }
+      });
+      return;
+    }
+
     // ── /api/skills/scan-result — Chrome extension badge endpoint ─────────
     // Returns cached scan result for a skill ID (populated by ClawHub Scanner)
     if (req.url?.startsWith('/api/skills/scan-result')) {

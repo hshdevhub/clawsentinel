@@ -1,0 +1,12 @@
+/* ClawSentinel Guard — Scan overlay and install modal host styles */
+/* Both the right-click scan panel and the install intercept modal render   */
+/* inside Shadow DOM. These rules prevent the bare host elements from taking */
+/* up any page space or disrupting the page layout.                          */
+
+#clawsentinel-overlay-root,
+#clawsentinel-modal-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483647;
+}

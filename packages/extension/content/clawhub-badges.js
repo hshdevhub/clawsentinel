@@ -322,3 +322,202 @@ new MutationObserver((mutations) => {
     }
   }
 }).observe(document.body, { childList: true, subtree: true });
+
+// ─── Install Button Intercept ─────────────────────────────────────────────────
+// Captures clicks on "Install" / "Add Skill" buttons in the capture phase —
+// before ClawHub's own handlers fire.
+//
+// danger skills  → blocks install entirely (hard modal, no proceed option)
+// warning skills → shows modal with "Proceed Anyway" option
+// safe / unscanned → lets click through unchanged
+
+const INSTALL_BTN_RE = /\b(install|add\s+skill|use\s+skill|get\s+skill|add\s+to\s+agent)\b/i;
+
+let _installModalHost  = null;
+let _bypassNextClick   = false;  // set true after "Proceed Anyway" to skip re-intercept
+
+document.addEventListener('click', interceptInstallClick, true); // capture phase
+
+function interceptInstallClick(e) {
+  // Bypass: user already confirmed on a warn modal — let this click through once.
+  if (_bypassNextClick) { _bypassNextClick = false; return; }
+
+  // Only care about clicks on clickable elements
+  const btn = e.target.closest('button, a[href], [role="button"]');
+  if (!btn) return;
+
+  const btnLabel = (btn.textContent?.trim() ?? '') + ' ' + (btn.getAttribute('aria-label') ?? '');
+  if (!INSTALL_BTN_RE.test(btnLabel)) return;
+
+  // Walk up to find the nearest skill card container
+  const card = btn.closest(
+    '[data-skill-id], [data-testid="skill-card"], [data-testid="skill-item"], ' +
+    '.skill-card, .skill-item, .skill-listing-item, .skill-tile, article, li'
+  );
+
+  // Identify the skill — same logic as injectBadges(); fallback to current page URL
+  const skillId = (card ? (
+    card.dataset.skillId ||
+    card.dataset.id ||
+    extractIdFromCard(card) ||
+    extractIdFromUrl(card.querySelector('a[href]')?.href)
+  ) : null) ?? extractIdFromUrl(location.href);
+
+  const skillName = card
+    ?.querySelector('h2, h3, h4, [class*="name"], [class*="title"]')
+    ?.textContent?.trim();
+
+  const cacheKey = skillId ?? skillName;
+  if (!cacheKey) return; // can't identify skill — let through
+
+  const result = scanCache.get(cacheKey);
+  if (!result || result.status === 'safe') return; // safe or not-yet-scanned — let through
+
+  // Intercept!
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  if (result.status === 'danger') {
+    showInstallModal(result, null); // hard block — no proceed option
+  } else {
+    // warning — show modal with Proceed Anyway
+    const capturedBtn = btn;
+    showInstallModal(result, () => {
+      _bypassNextClick = true;
+      capturedBtn.click();
+    });
+  }
+}
+
+function showInstallModal(result, onProceed) {
+  if (_installModalHost) { _installModalHost.remove(); _installModalHost = null; }
+
+  const isDanger  = result.status === 'danger';
+  const accentClr = isDanger ? '#ff3b3b' : '#f59e0b';
+  const bgClr     = isDanger ? '#1a0808' : '#1a1208';
+  const titleText = isDanger ? 'INSTALL BLOCKED' : 'SECURITY WARNING';
+  const icon      = isDanger ? '🔴' : '⚠️';
+  const message   = isDanger
+    ? 'ClawSentinel detected critical security threats in this skill. Installing it could compromise your AI agent or system.'
+    : 'ClawSentinel detected suspicious patterns in this skill. Review the findings below before proceeding.';
+
+  const skillDisplay = escapeHtml(result.name ?? 'This skill');
+
+  const findingRows = (result.findings ?? []).slice(0, 6).map(f => `
+    <div class="cs-row cs-row-${f.severity === 'block' ? 'hi' : 'lo'}">
+      <span class="cs-sev">${f.severity === 'block' ? 'BLOCK' : 'WARN'}</span>
+      <span class="cs-desc">${escapeHtml(f.label)}</span>
+    </div>`).join('');
+
+  const proceedBtn = onProceed
+    ? `<button id="cs-proceed" class="cs-btn cs-btn-warn">Proceed Anyway →</button>`
+    : '';
+
+  const css = `
+    :host { all: initial; }
+    #cs-backdrop {
+      position: fixed; inset: 0; z-index: 2147483647;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center;
+      animation: cs-fdin .15s ease;
+    }
+    @keyframes cs-fdin { from{opacity:0} to{opacity:1} }
+    #cs-modal {
+      background: #0d0d0d; border: 1.5px solid ${accentClr};
+      border-radius: 14px; width: 440px; max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 80px); overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.8);
+      font-family: system-ui,-apple-system,sans-serif; font-size: 13px; color: #f1f1f1;
+      animation: cs-pop .18s ease;
+    }
+    @keyframes cs-pop { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+    #cs-head {
+      padding: 16px; border-bottom: 1px solid #1f1f1f;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    #cs-icon  { font-size: 26px; line-height: 1; flex-shrink: 0; }
+    #cs-title { font-size: 14px; font-weight: 800; color: ${accentClr}; letter-spacing: .04em; }
+    #cs-skill { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+    #cs-body  {
+      padding: 14px 16px; background: ${bgClr}; border-bottom: 1px solid #1f1f1f;
+      font-size: 13px; line-height: 1.55;
+    }
+    #cs-findings { padding: 12px 16px; border-bottom: 1px solid #1f1f1f; }
+    #cs-findings-lbl {
+      font-size: 10px; font-weight: 700; color: #6b7280;
+      letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .cs-row { display:flex; gap:8px; align-items:flex-start; padding:4px 0; border-bottom:1px solid #141414; }
+    .cs-row:last-child { border-bottom:none; }
+    .cs-sev { font-size:9px; font-weight:700; padding:2px 5px; border-radius:3px; flex-shrink:0; white-space:nowrap; }
+    .cs-row-hi .cs-sev { background:#2d0a0a; color:#ff3b3b; }
+    .cs-row-lo .cs-sev { background:#2d1f0a; color:#f59e0b; }
+    .cs-desc { color:#d1d5db; font-size:12px; line-height:1.4; }
+    #cs-actions {
+      padding: 12px 16px;
+      display: flex; gap: 8px; align-items: center; justify-content: flex-end;
+    }
+    #cs-brand { flex:1; font-size:10px; color:#374151; }
+    .cs-btn { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; }
+    #cs-cancel { background:#1f1f1f; color:#f1f1f1; }
+    #cs-cancel:hover { background:#2a2a2a; }
+    .cs-btn-warn { background:#f59e0b; color:#000; }
+    .cs-btn-warn:hover { background:#d97706; }
+  `;
+
+  const htm = `
+    <div id="cs-backdrop">
+      <div id="cs-modal" role="dialog" aria-modal="true" aria-labelledby="cs-title">
+        <div id="cs-head">
+          <span id="cs-icon">${icon}</span>
+          <div>
+            <div id="cs-title">ClawSentinel — ${titleText}</div>
+            <div id="cs-skill">${skillDisplay}</div>
+          </div>
+        </div>
+        <div id="cs-body">${message}</div>
+        ${findingRows ? `<div id="cs-findings"><div id="cs-findings-lbl">Detected Threats</div>${findingRows}</div>` : ''}
+        <div id="cs-actions">
+          <span id="cs-brand">ClawSentinel Guard</span>
+          ${proceedBtn}
+          <button id="cs-cancel" class="cs-btn">← Cancel</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  _installModalHost = document.createElement('div');
+  _installModalHost.id = 'clawsentinel-modal-root';
+  document.documentElement.appendChild(_installModalHost);
+
+  const shadow  = _installModalHost.attachShadow({ mode: 'open' });
+  const styleEl = document.createElement('style');
+  styleEl.textContent = css;
+  shadow.appendChild(styleEl);
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = htm;
+  shadow.appendChild(wrapper);
+
+  function closeModal() {
+    _installModalHost?.remove();
+    _installModalHost = null;
+  }
+
+  shadow.querySelector('#cs-cancel').addEventListener('click', closeModal);
+
+  // Backdrop click dismisses warning modals (danger requires explicit Cancel)
+  if (onProceed) {
+    shadow.querySelector('#cs-backdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'cs-backdrop') closeModal();
+    });
+  }
+
+  // Proceed Anyway (warning only)
+  if (onProceed) {
+    shadow.querySelector('#cs-proceed')?.addEventListener('click', () => {
+      closeModal();
+      onProceed();
+    });
+  }
+}

@@ -1,11 +1,31 @@
 'use strict';
 
 // ClawSentinel Guard — Background Service Worker
-// Manages per-tab scan results and toolbar icon state.
+// Manages per-tab scan results, toolbar icon state, and context menu.
 
 // ─── State ────────────────────────────────────────────────────────────────────
 // tabResults: tabId → latest ScanResult for that tab
 const tabResults = new Map();
+
+// ─── Context menu — "Scan with ClawSentinel" on text selection ───────────────
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'clawsentinel-scan-selection',
+    title: 'Scan with ClawSentinel',
+    contexts: ['selection'],
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId !== 'clawsentinel-scan-selection') return;
+  if (!tab?.id || !info.selectionText?.trim()) return;
+  // Forward selected text to the content script on the active tab
+  chrome.tabs.sendMessage(tab.id, {
+    type: 'SCAN_SELECTION',
+    text: info.selectionText.trim()
+  }).catch(() => { /* content script may not be ready */ });
+});
 
 // ─── Message handler ───────────────────────────────────────────────────────────
 

@@ -29,6 +29,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content/scanner.js"],
+      "css": ["content/scan-overlay.css"],
       "run_at": "document_idle",
       "all_frames": false
     },
@@ -42,7 +43,9 @@
 
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "contextMenus",
+    "notifications"
   ],
 
   "host_permissions": [

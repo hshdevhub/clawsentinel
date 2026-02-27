@@ -115,6 +115,17 @@ export class PatternEngine {
     return this.rules.length;
   }
 
+  // Returns all rules as plain objects for the Chrome extension /api/rules endpoint
+  getRules(): RuleDefinition[] {
+    return this.rules.map(r => ({
+      id: r.id,
+      pattern: r.pattern.source,
+      weight: r.weight,
+      category: r.category,
+      description: r.description
+    }));
+  }
+
   getRulesByCategory(): Record<string, number> {
     const counts: Record<string, number> = {};
     for (const rule of this.rules) {

@@ -41,6 +41,7 @@ const copies = [
   ['content/scanner.js',        'content/scanner.js'],
   ['content/clawhub-badges.js', 'content/clawhub-badges.js'],
   ['content/scanner.css',       'content/scanner.css'],
+  ['content/scan-overlay.css',  'content/scan-overlay.css'],
   // Background
   ['background/service-worker.js', 'background/service-worker.js'],
   // Popup

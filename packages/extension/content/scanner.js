@@ -243,10 +243,38 @@ function computeRisk(findings) {
   return { level: 'info', score: totalWeight, color: 'green' };
 }
 
+// ─── Load bundled rules from extension package ────────────────────────────────
+// Merges injection-patterns.json (bundled with extension) into PATTERNS at runtime.
+// Falls back to the hardcoded PATTERNS array above if the fetch fails.
+
+async function loadBundledRules() {
+  try {
+    const url = chrome.runtime.getURL('rules/injection-patterns.json');
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const rules = await res.json();
+    for (const rule of rules) {
+      // Skip if a pattern with this id is already hardcoded
+      if (PATTERNS.find(p => p.id === rule.id)) continue;
+      try {
+        const re = new RegExp(rule.pattern, 'iu');
+        PATTERNS.push({
+          id: rule.id,
+          label: rule.description ?? rule.id,
+          weight: Math.min(rule.weight ?? 8, 10), // cap at 10 for browser risk scoring
+          test: (text) => re.test(text)
+        });
+      } catch { /* invalid regex — skip */ }
+    }
+  } catch { /* bundled rules unavailable — use hardcoded set */ }
+}
+
 // ─── Run scan + report to background ──────────────────────────────────────────
 
-(function main() {
-  // Small delay to let SPA content render
+(async function main() {
+  // Load extra rules from bundled JSON first, then wait for SPA content to render
+  await loadBundledRules();
+
   setTimeout(() => {
     let findings, risk;
 

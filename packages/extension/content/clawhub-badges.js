@@ -7,30 +7,63 @@
 // ─── Scan result cache ────────────────────────────────────────────────────────
 const scanCache = new Map();
 
+// ─── Selector strategy ────────────────────────────────────────────────────────
+// Try progressively broader selectors to find skill cards regardless of the
+// exact class names ClawHub uses. Each tier is tried in order; the first that
+// returns at least one element wins.
+
+const CARD_SELECTOR_TIERS = [
+  // Tier 1 — explicit semantic attributes (most reliable)
+  '[data-skill-id], [data-testid="skill-card"], [data-testid="skill-item"]',
+  // Tier 2 — conventional class names
+  '.skill-card, .skill-item, .skill-listing-item, .skill-tile',
+  // Tier 3 — any anchor whose href contains "/skills/" wrapped in a containing block
+  'a[href*="/skills/"]',
+];
+
+// Wait selector covers all tiers combined
+const WAIT_SELECTOR = CARD_SELECTOR_TIERS.join(', ');
+
+function findSkillCards() {
+  for (const selector of CARD_SELECTOR_TIERS) {
+    const nodes = document.querySelectorAll(selector);
+    if (nodes.length > 0) return nodes;
+  }
+  return [];
+}
+
 // ─── Badge injection ──────────────────────────────────────────────────────────
 
 async function injectBadges() {
-  // Wait for skill cards to render (ClawHub is a React SPA)
-  await waitForElement('.skill-card, [data-skill-id], .skill-listing, [data-testid="skill-card"]');
+  // Wait for any skill card variant to render (ClawHub is a React SPA)
+  await waitForElement(WAIT_SELECTOR);
 
-  const skillCards = document.querySelectorAll(
-    '.skill-card, [data-skill-id], [data-testid="skill-card"]'
-  );
+  const skillCards = findSkillCards();
 
   for (const card of skillCards) {
-    const skillId   = card.dataset.skillId
-                   || card.querySelector('[data-id]')?.dataset.id
-                   || extractIdFromCard(card);
-    const skillName = card.querySelector('.skill-name, h3, h4, [class*="title"]')?.textContent?.trim();
+    // For anchor-tier matches, walk up to a containing block element
+    const container = card.closest('article, li, [class*="card"], [class*="tile"], [class*="item"]') ?? card;
+
+    const skillId   = container.dataset.skillId
+                   || container.dataset.id
+                   || card.dataset.skillId
+                   || container.querySelector('[data-id]')?.dataset.id
+                   || extractIdFromCard(container)
+                   || extractIdFromUrl(card.href ?? card.querySelector('a[href*="/skills/"]')?.href);
+
+    const skillName = container.querySelector('h2, h3, h4, [class*="name"], [class*="title"]')?.textContent?.trim()
+                   || card.textContent?.trim().slice(0, 40);
 
     if (!skillId && !skillName) continue;
-    if (card.querySelector('.clawsentinel-badge')) continue; // already injected
+    if (container.querySelector('.clawsentinel-badge')) continue; // already injected
 
     const badge = createBadge(null);
-    card.style.position = 'relative';
-    card.appendChild(badge);
+    // Only set position:relative if not already positioned, to avoid breaking layouts
+    const pos = getComputedStyle(container).position;
+    if (pos === 'static') container.style.position = 'relative';
+    container.appendChild(badge);
 
-    getScanResult(skillId ?? skillName, skillName, card)
+    getScanResult(skillId ?? skillName, skillName, container)
       .then(result => updateBadge(badge, result))
       .catch(() => updateBadge(badge, { score: null, status: 'unscanned', findings: [] }));
   }

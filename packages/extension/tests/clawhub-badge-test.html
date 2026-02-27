@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ClawSentinel Guard — ClawHub Badge Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0d0d0d; color: #f1f1f1; padding: 24px; }
+    h1 { color: #ff3b3b; font-size: 1.3rem; margin-bottom: 6px; }
+    .subtitle { color: #6b7280; font-size: 0.85rem; margin-bottom: 4px; }
+    .instructions { background: #0f1f3d; border: 1px solid #3b82f6; border-radius: 8px; padding: 14px 18px; margin: 16px 0 24px; font-size: 0.85rem; line-height: 1.6; }
+    .instructions code { color: #93c5fd; }
+    .instructions ol { margin-left: 18px; }
+    .instructions li { margin: 4px 0; }
+
+    /* Mock ClawHub skill grid */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+
+    /* Uses the exact selectors our extension looks for */
+    .skill-card {
+      background: #141414;
+      border: 1px solid #1f1f1f;
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;      /* Extension sets this too — verify no conflict */
+      cursor: pointer;
+      transition: border-color 0.15s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .skill-card:hover { border-color: #3b82f6; }
+    .skill-card h3 { font-size: 0.95rem; margin-bottom: 6px; color: #f1f1f1; }
+    .skill-card .skill-author { font-size: 0.75rem; color: #6b7280; margin-bottom: 8px; }
+    .skill-card .skill-desc { font-size: 0.82rem; color: #9ca3af; line-height: 1.5; }
+    .skill-card .skill-install-btn {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 6px 14px;
+      background: #3b82f6;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Section labels */
+    h2 { color: #3b82f6; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 28px 0 12px; }
+
+    /* Expected result labels */
+    .expect-badge { font-size: 0.75rem; margin-top: 8px; color: #6b7280; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<h1>ClawSentinel Guard — ClawHub Badge Injection Test</h1>
+<p class="subtitle">Simulates a ClawHub skill listing page using the selectors the extension looks for</p>
+
+<div class="instructions">
+  <strong>Setup:</strong>
+  <ol>
+    <li>Open <code>manifest.json</code> and temporarily add <code>"http://127.0.0.1/*"</code> and <code>"file://*/*"</code> to the <code>clawhub-badges.js</code> content_script matches</li>
+    <li>Rebuild: <code>node scripts/build.js</code></li>
+    <li>Reload extension at <code>chrome://extensions</code></li>
+    <li>Serve this file: <code>npx serve packages/extension/tests/ -p 8899</code> then open <code>http://127.0.0.1:8899/clawhub-badge-test.html</code></li>
+    <li>Verify badges appear on each skill card (top-right corner) within ~2 seconds</li>
+  </ol>
+  <br>
+  <strong>Note:</strong> Since the <code>clawhub.ai/api/skills/{id}/source</code> API doesn't exist in development, inline skill analysis uses the <strong>source embedded below via data-source-url</strong>. All badges may show <strong>⬜ Unscanned</strong> without the API — this is expected.
+</div>
+
+<h2>Safe Skills</h2>
+<div class="skills-grid">
+
+  <!-- Safe skill: simple string utility -->
+  <a class="skill-card" href="/skills/text-summarizer" data-skill-id="text-summarizer">
+    <h3>Text Summarizer</h3>
+    <div class="skill-author">by trusted-dev · ⭐ 4.8</div>
+    <div class="skill-desc">Summarize long documents into concise bullet points using the Anthropic API.</div>
+    <button class="skill-install-btn">Install</button>
+    <div class="expect-badge">Expected badge: ✅ Safe (no malicious patterns)</div>
+  </a>
+
+  <!-- Safe skill: JSON formatter -->
+  <a class="skill-card" href="/skills/json-formatter" data-skill-id="json-formatter">
+    <h3>JSON Formatter</h3>
+    <div class="skill-author">by devtools-inc · ⭐ 4.9</div>
+    <div class="skill-desc">Parse and pretty-print JSON data with syntax highlighting and validation.</div>
+    <button class="skill-install-btn">Install</button>
+    <div class="expect-badge">Expected badge: ✅ Safe</div>
+  </a>
+
+</div>
+
+<h2>Suspicious Skills (WARN)</h2>
+<div class="skills-grid">
+
+  <!-- Warn skill: unknown outbound URL -->
+  <a class="skill-card" href="/skills/weather-fetcher" data-skill-id="weather-fetcher">
+    <h3>Weather Fetcher</h3>
+    <div class="skill-author">by unknown-author · ⭐ 3.1</div>
+    <div class="skill-desc">Fetches live weather data. Makes outbound calls to third-party weather APIs.</div>
+    <button class="skill-install-btn">Install</button>
+    <div class="expect-badge">Expected badge: ⚠️ Review (outbound URL to unknown domain)</div>
+  </a>
+
+</div>
+
+<h2>Dangerous Skills (BLOCK)</h2>
+<div class="skills-grid">
+
+  <!-- Dangerous: shell exec -->
+  <a class="skill-card" href="/skills/shell-helper" data-skill-id="shell-helper">
+    <h3>Shell Helper</h3>
+    <div class="skill-author">by malicious-actor · ⭐ 2.0</div>
+    <div class="skill-desc">Helps automate shell tasks. Requires system access.</div>
+    <button class="skill-install-btn">Install</button>
+    <div class="expect-badge">Expected badge: 🔴 Danger (shell execution patterns)</div>
+  </a>
+
+  <!-- Dangerous: credential exfil -->
+  <a class="skill-card" href="/skills/config-sync" data-skill-id="config-sync">
+    <h3>Config Sync</h3>
+    <div class="skill-author">by fake-publisher · ⭐ 1.5</div>
+    <div class="skill-desc">Syncs your configuration files to a remote backup server.</div>
+    <button class="skill-install-btn">Install</button>
+    <div class="expect-badge">Expected badge: 🔴 Danger (credential + exfil patterns)</div>
+  </a>
+
+  <!-- Dangerous: reverse shell -->
+  <a class="skill-card" href="/skills/remote-debug" data-skill-id="remote-debug">
+    <h3>Remote Debugger</h3>
+    <div class="skill-author">by anon · ⭐ 0.9</div>
+    <div class="skill-desc">Enables remote debugging capabilities for your agent.</div>
+    <button class="skill-install-btn">Install</button>
+    <div class="expect-badge">Expected badge: 🔴 Danger (reverse shell patterns)</div>
+  </a>
+
+</div>
+
+<h2>Badge Selector Fallback Test (data-testid)</h2>
+<div class="skills-grid">
+
+  <!-- Tests Tier-1 selector: data-testid="skill-card" -->
+  <div data-testid="skill-card" data-skill-id="testid-skill" style="background:#141414;border:1px solid #1f1f1f;border-radius:12px;padding:20px;position:relative;">
+    <h3>Skill via data-testid</h3>
+    <div style="font-size:0.75rem;color:#6b7280">data-testid="skill-card" selector</div>
+    <p style="font-size:0.82rem;color:#9ca3af;margin-top:8px">Tests that the Tier-1 selector (data-testid) is working. Badge should appear here.</p>
+    <div class="expect-badge">Expected badge: ✅ Safe or ⬜ Unscanned</div>
+  </div>
+
+</div>
+
+<h2>False Positive: Plain Content Cards</h2>
+<div class="skills-grid">
+
+  <!-- Should NOT have badges injected since these aren't skill cards -->
+  <div style="background:#141414;border:1px solid #1f1f1f;border-radius:12px;padding:20px;">
+    <h3>Blog Post (no data-skill-id)</h3>
+    <p style="font-size:0.82rem;color:#9ca3af;margin-top:8px">This is a plain content card with no skill-related attributes. The badge injector should skip it.</p>
+    <div class="expect-badge">Expected: NO badge (not a skill card — no matching selector)</div>
+  </div>
+
+</div>
+
+</body>
+</html>

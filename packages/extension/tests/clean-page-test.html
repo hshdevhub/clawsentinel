@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="A productivity tool for developers to organise their tasks">
+  <title>ClawSentinel Guard — Clean Page Test (False Positive Check)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #0d0d0d; color: #f1f1f1; }
+    h1 { color: #22c55e; font-size: 1.4rem; border-bottom: 1px solid #1f1f1f; padding-bottom: 10px; }
+    .instructions { background: #0f1f3d; border: 1px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 0.88rem; line-height: 1.6; }
+    .expect { font-size: 0.9rem; color: #22c55e; background: #052e16; border: 1px solid #166534; border-radius: 8px; padding: 12px 16px; margin: 20px 0; }
+    article { background: #141414; border: 1px solid #1f1f1f; border-radius: 8px; padding: 20px; margin: 16px 0; }
+    h2 { color: #93c5fd; font-size: 1rem; }
+    p { line-height: 1.7; color: #d1d5db; }
+    code { color: #86efac; font-family: monospace; }
+  </style>
+</head>
+<body>
+
+<h1>Clean Page Test — False Positive Verification</h1>
+
+<div class="instructions">
+  Load this page with the extension installed. The popup should show <strong style="color:#22c55e">✅ Clean — No injection patterns detected</strong> and the toolbar icon should be green.
+  If any findings appear, that is a false positive that needs to be fixed.
+</div>
+
+<div class="expect">
+  ✅ Expected result: GREEN icon · 0 findings · "Clean — No injection patterns detected"
+</div>
+
+<article>
+  <h2>How to remove node_modules</h2>
+  <p>To remove all node_modules folders recursively from your project, run:</p>
+  <p><code>find . -name "node_modules" -type d -prune -exec rm -rf '{}' +</code></p>
+  <p>This deletes the folder and all its contents without asking for confirmation.</p>
+</article>
+
+<article>
+  <h2>AI task management tips</h2>
+  <p>When working with AI agents, it's important to give clear instructions. Always tell the AI what you want it to do, and provide context about your previous work sessions.</p>
+  <p>Remember: AI agents work best when they have full context about the task at hand. Store important information in a structured format.</p>
+</article>
+
+<article>
+  <h2>Python subprocess example</h2>
+  <p>The subprocess module lets you run shell commands from Python. Here's how to use it safely:</p>
+  <p><code>import subprocess; result = subprocess.run(["ls", "-la"], capture_output=True)</code></p>
+  <p>Always use a list argument (not a string) to avoid shell injection vulnerabilities.</p>
+</article>
+
+<article>
+  <h2>API key best practices</h2>
+  <p>Never hardcode API keys directly in your source code. Instead, use environment variables. Access them with <code>process.env.API_KEY</code> in Node.js or <code>os.environ["API_KEY"]</code> in Python.</p>
+  <p>Rotate your API keys regularly, and revoke any that may have been exposed.</p>
+</article>
+
+<article>
+  <h2>System administration</h2>
+  <p>Override the default settings by modifying the config file at <code>/etc/app/settings.conf</code>. The developer mode flag can be enabled for additional debugging output.</p>
+  <p>Previous instructions for setup are documented in the README. Ignore any outdated steps and refer to the latest version of this guide.</p>
+</article>
+
+</body>
+</html>

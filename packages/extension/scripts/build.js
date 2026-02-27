@@ -62,63 +62,142 @@ for (const [src, dest] of copies) {
   }
 }
 
-// ── Generate placeholder icons ────────────────────────────────────────────────
-// Creates minimal valid PNG files with solid colors.
-// Replace with real artwork before Chrome Web Store submission.
+// ── Generate icons — "CS" lettermark on a colored background ─────────────────
+// Pure-Node PNG generation: no native dependencies.
+// 5×7 bitmap font for "C" and "S"; scaled up for 48 and 128 px sizes.
 
 const COLORS = {
-  green:  [16, 185, 129],   // #10b981 — safe
-  yellow: [245, 158, 11],   // #f59e0b — warning
-  red:    [239, 68,  68],   // #ef4444 — danger
-  grey:   [107, 114, 128]   // #6b7280 — default/unscanned
+  green:  [  5, 150, 105],  // #059669 — safe (darker for contrast)
+  yellow: [217, 119,   6],  // #d97706 — warning (amber)
+  red:    [220,  38,  38],  // #dc2626 — danger
+  grey:   [ 75,  85,  99],  // #4b5563 — default/unscanned
 };
 
 const SIZES = [16, 48, 128];
 
-// Must be declared before createSolidColorPNG is called (ESM TDZ)
+// 5×7 bitmap font — each row is 5 bits, MSB left (1 = white pixel)
+// C: classic rounded C shape
+const LETTER_C = [
+  0,1,1,1,0,
+  1,0,0,0,1,
+  1,0,0,0,0,
+  1,0,0,0,0,
+  1,0,0,0,0,
+  1,0,0,0,1,
+  0,1,1,1,0,
+];
+// S: top-open, bottom-open S curve
+const LETTER_S = [
+  0,1,1,1,0,
+  1,0,0,0,1,
+  1,0,0,0,0,
+  0,1,1,1,0,
+  0,0,0,0,1,
+  1,0,0,0,1,
+  0,1,1,1,0,
+];
+
+// Must be declared before icon generators are called (ESM TDZ)
 let _crcTable = null;
 
 for (const [color, [r, g, b]] of Object.entries(COLORS)) {
   for (const size of SIZES) {
     const filename = `icon-${color}-${size}.png`;
     const destPath = path.join(DIST, 'icons', filename);
-    const pngData  = createSolidColorPNG(size, size, r, g, b);
+    const pngData  = createLogoIcon(size, r, g, b);
     fs.writeFileSync(destPath, pngData);
   }
 }
 
-function createSolidColorPNG(width, height, r, g, b) {
-  // PNG signature
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+// Creates a square PNG icon: colored background + white "CS" lettermark.
+//
+// Scale strategy (font pixel → real pixels):
+//   16 px  →  1×  (letters: 11×7 centred in 16×16)
+//   48 px  →  4×  (letters: 44×28 centred in 48×48)
+//  128 px  → 10×  (letters: 110×70 centred in 128×128)
+//
+// At 48 px and above a 2-pixel lighter inset ring is drawn first to give
+// the icon visual depth.
+function createLogoIcon(size, r, g, b) {
+  const scale   = size <= 16 ? 1 : size <= 48 ? 4 : 10;
+  const letterW = 5 * scale;
+  const letterH = 7 * scale;
+  const gapW    = 1 * scale;           // gap between C and S
+  const totalW  = letterW + gapW + letterW;
+  const leftOff = Math.floor((size - totalW) / 2);
+  const topOff  = Math.floor((size - letterH) / 2);
 
-  // IHDR chunk: width, height, bit depth=8, color type=2 (RGB), compression=0, filter=0, interlace=0
-  const ihdrData = Buffer.alloc(13);
-  ihdrData.writeUInt32BE(width,  0);
-  ihdrData.writeUInt32BE(height, 4);
-  ihdrData[8]  = 8;  // bit depth
-  ihdrData[9]  = 2;  // color type: RGB
-  ihdrData[10] = 0;  // compression
-  ihdrData[11] = 0;  // filter
-  ihdrData[12] = 0;  // interlace
-  const ihdr = makeChunk('IHDR', ihdrData);
+  // --- pixel buffer (RGB, 3 bytes per pixel) ---
+  const pixels = new Uint8Array(size * size * 3);
 
-  // IDAT chunk: raw image data (filter byte 0 + RGB per row)
-  const rowSize = 1 + width * 3; // filter byte + RGB pixels
-  const rawData = Buffer.alloc(height * rowSize);
-  for (let y = 0; y < height; y++) {
-    const rowStart = y * rowSize;
-    rawData[rowStart] = 0; // filter type: None
-    for (let x = 0; x < width; x++) {
-      const offset = rowStart + 1 + x * 3;
-      rawData[offset]     = r;
-      rawData[offset + 1] = g;
-      rawData[offset + 2] = b;
+  // Fill background
+  for (let i = 0; i < size * size; i++) {
+    pixels[i * 3]     = r;
+    pixels[i * 3 + 1] = g;
+    pixels[i * 3 + 2] = b;
+  }
+
+  // Inset highlight ring at 48+ px: add ~40 to each channel (lighter shade)
+  if (size >= 48) {
+    const ring = size >= 128 ? 4 : 2;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (x < ring || x >= size - ring || y < ring || y >= size - ring) {
+          const idx = (y * size + x) * 3;
+          pixels[idx]     = Math.min(255, pixels[idx]     + 40);
+          pixels[idx + 1] = Math.min(255, pixels[idx + 1] + 40);
+          pixels[idx + 2] = Math.min(255, pixels[idx + 2] + 40);
+        }
+      }
     }
   }
-  const compressed = zlib.deflateSync(rawData);
-  const idat = makeChunk('IDAT', compressed);
 
-  // IEND chunk
+  // Draw a 5×7 letter bitmap in white, scaled, at (startCol, topOff)
+  function drawLetter(bitmap, startCol) {
+    for (let row = 0; row < 7; row++) {
+      for (let col = 0; col < 5; col++) {
+        if (!bitmap[row * 5 + col]) continue;
+        for (let sy = 0; sy < scale; sy++) {
+          for (let sx = 0; sx < scale; sx++) {
+            const px = startCol + col * scale + sx;
+            const py = topOff   + row * scale + sy;
+            if (px >= 0 && px < size && py >= 0 && py < size) {
+              const idx = (py * size + px) * 3;
+              pixels[idx]     = 255;
+              pixels[idx + 1] = 255;
+              pixels[idx + 2] = 255;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  drawLetter(LETTER_C, leftOff);
+  drawLetter(LETTER_S, leftOff + letterW + gapW);
+
+  // --- encode as PNG ---
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  const ihdrData = Buffer.alloc(13);
+  ihdrData.writeUInt32BE(size, 0);
+  ihdrData.writeUInt32BE(size, 4);
+  ihdrData[8] = 8; ihdrData[9] = 2; // 8-bit RGB, no alpha
+  const ihdr = makeChunk('IHDR', ihdrData);
+
+  const rowSize = 1 + size * 3;
+  const rawData = Buffer.alloc(size * rowSize);
+  for (let y = 0; y < size; y++) {
+    rawData[y * rowSize] = 0; // filter: None
+    for (let x = 0; x < size; x++) {
+      const src  = (y * size + x) * 3;
+      const dest = y * rowSize + 1 + x * 3;
+      rawData[dest]     = pixels[src];
+      rawData[dest + 1] = pixels[src + 1];
+      rawData[dest + 2] = pixels[src + 2];
+    }
+  }
+  const idat = makeChunk('IDAT', zlib.deflateSync(rawData));
   const iend = makeChunk('IEND', Buffer.alloc(0));
 
   return Buffer.concat([signature, ihdr, idat, iend]);

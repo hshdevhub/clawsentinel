@@ -85,28 +85,44 @@ async function getScanResult(skillId, skillName, card) {
       scanCache.set(cacheKey, data);
       return data;
     }
-  } catch { /* platform not running — fall through to inline scan */ }
+  } catch { /* platform not running — fall through */ }
 
-  // 2. Fallback: fetch skill source from ClawHub API and scan inline
-  const skillUrl = card.querySelector('a[href*="/skills/"]')?.href;
-  const id = skillId || extractIdFromUrl(skillUrl);
-
-  if (id) {
-    try {
-      const res = await fetch(`https://clawhub.ai/api/skills/${encodeURIComponent(id)}/source`, {
-        signal: AbortSignal.timeout(5000)
-      });
-      if (res.ok) {
-        const source = await res.text();
-        const result = scanSkillSource(source, skillName ?? id);
-        result.source = 'extension-inline';
-        scanCache.set(cacheKey, result);
-        return result;
-      }
-    } catch { /* skill source not available */ }
+  // 2. Fallback: scan the card's visible text (title + description) directly from DOM.
+  // ClawHub does not expose a public source API, so this is always the practical fallback.
+  // This gives real signal on description-level threats without any external API call.
+  const cardText = extractCardText(card);
+  if (cardText) {
+    const result = scanSkillSource(cardText, skillName ?? skillId ?? 'Unknown');
+    result.source = 'description';
+    result.limited = true; // signals that only card text was scanned, not full YAML source
+    scanCache.set(cacheKey, result);
+    return result;
   }
 
   return { score: null, status: 'unscanned', findings: [], source: 'none' };
+}
+
+// Extract visible text content from a skill card for inline scanning.
+// Collects title, description, and any visible paragraph/span text.
+function extractCardText(card) {
+  const parts = [];
+
+  // Title — check common heading and title selectors
+  const title = card.querySelector('h1, h2, h3, h4, h5, [class*="name"], [class*="title"], [class*="heading"]');
+  if (title) parts.push(title.textContent.trim());
+
+  // Description / summary
+  const desc = card.querySelector('p, [class*="desc"], [class*="summary"], [class*="content"], [class*="subtitle"]');
+  if (desc) parts.push(desc.textContent.trim());
+
+  // Any remaining text nodes in spans (catches author, tags, etc.)
+  card.querySelectorAll('span, small').forEach(el => {
+    const t = el.textContent.trim();
+    if (t.length > 4 && !parts.includes(t)) parts.push(t);
+  });
+
+  const joined = parts.join(' ').trim();
+  return joined.length > 5 ? joined : null;
 }
 
 // Inline static analysis — mirrors the ClawHub Scanner platform rules
@@ -178,21 +194,30 @@ function updateBadge(badge, result) {
   }
 
   if (result.score === null) {
-    badge.innerHTML = `<span class="cs-badge cs-unscanned" title="Not yet scanned by ClawSentinel. Install ClawSentinel platform for full protection.">⬜ Unscanned</span>`;
+    badge.innerHTML = `<span class="cs-badge cs-unscanned" title="Could not scan this skill. Install ClawSentinel platform for full protection.">⬜ Unscanned</span>`;
     return;
   }
 
   const { score, status, findings } = result;
+  const isLimited = result.limited === true; // description-only scan, not full YAML
+
   const icon  = status === 'safe'    ? '✅'
               : status === 'warning' ? '⚠️'
               : '🔴';
-  const label = status === 'safe'    ? `${score}/100 Safe`
+
+  // For limited (description-only) scans: show "Desc. Clean" or normal risk labels
+  const label = isLimited && status === 'safe'
+              ? 'Desc. Clean'
+              : status === 'safe'    ? `${score}/100 Safe`
               : status === 'warning' ? `${score}/100 Review`
               : `${score}/100 Risk`;
 
   const tipLines = findings.slice(0, 5).map(f => `• ${f.label}`);
   if (findings.length > 5) tipLines.push(`… and ${findings.length - 5} more`);
-  const tip = tipLines.length > 0 ? tipLines.join('\n') : 'No issues found';
+  const baseNote = isLimited
+    ? 'Description scan only — install ClawSentinel platform for full YAML analysis.'
+    : 'No issues found';
+  const tip = tipLines.length > 0 ? tipLines.join('\n') + '\n\n' + baseNote : baseNote;
   const sourceNote = result.source === 'platform' ? ' (via ClawSentinel)' : '';
 
   badge.innerHTML = `
@@ -219,14 +244,28 @@ function waitForElement(selector, timeout = 6000) {
 }
 
 function extractIdFromCard(card) {
-  const link = card.querySelector('a[href*="/skills/"]');
+  // Try any anchor in the card — clawhub.ai uses /$owner/$slug, not /skills/$slug
+  const link = card.querySelector('a[href]');
   return link ? extractIdFromUrl(link.href) : null;
 }
 
 function extractIdFromUrl(url) {
   if (!url) return null;
-  const match = url.match(/\/skills\/([^/?#]+)/);
-  return match?.[1] ?? null;
+
+  // Pattern 1: /skills/slug  (original assumed format)
+  const skillsMatch = url.match(/\/skills\/([^/?#]+)/);
+  if (skillsMatch) return skillsMatch[1];
+
+  // Pattern 2: /$owner/$slug  (actual clawhub.ai format, e.g. /steipete/gog)
+  // Exclude common non-skill paths
+  const ownerSlugMatch = url.match(/\/(@?[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/?(?:[?#]|$)/);
+  if (ownerSlugMatch) {
+    const [, owner, slug] = ownerSlugMatch;
+    const skip = new Set(['api', 'assets', 'static', 'skills', 'search', 'upload', 'import']);
+    if (!skip.has(owner.replace('@', ''))) return `${owner.replace('@', '')}/${slug}`;
+  }
+
+  return null;
 }
 
 function escapeHtml(str) {

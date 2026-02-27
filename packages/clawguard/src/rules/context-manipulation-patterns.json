@@ -18,7 +18,7 @@
     "pattern": "(this\\s+message|this\\s+prompt|this\\s+input)\\s+(should\\s+be|is|must\\s+be)\\s+(treated|interpreted|understood|read)\\s+(as|like)\\s+(a\\s+)?(system|admin|operator|root)\\s+(message|command|prompt|instruction)",
     "weight": 10,
     "category": "message_type_spoof",
-    "description": "Spoofing message type — user message claiming to be system message"
+    "description": "Spoofing message type \u2014 user message claiming to be system message"
   },
   {
     "id": "CTX004",
@@ -137,7 +137,7 @@
     "pattern": "(markdown|html|json|yaml|xml|latex|code\\s+block).{0,40}(injection|escape|breakout|injection\\s+via)",
     "weight": 8,
     "category": "indirect_injection",
-    "description": "Format-based injection — escaping markdown/HTML/code block"
+    "description": "Format-based injection \u2014 escaping markdown/HTML/code block"
   },
   {
     "id": "CTX021",
@@ -158,7 +158,7 @@
     "pattern": "(tool\\s+result|function\\s+result|api\\s+response|tool\\s+output|plugin\\s+output).{0,80}(inject|contains?\\s+injection|weaponize|exploit|poison)",
     "weight": 9,
     "category": "tool_result_injection",
-    "description": "Tool result containing injection payload — indirect attack"
+    "description": "Tool result containing injection payload \u2014 indirect attack"
   },
   {
     "id": "CTX024",
@@ -298,7 +298,7 @@
     "pattern": "(sleep|wait|pause|delay)\\s+(for\\s+)?([0-9]+\\s+)?(seconds?|minutes?|hours?|days?|ms|milliseconds?)\\s+(then|and\\s+then|before)\\s+(execute|run|send|exfil|call|trigger)",
     "weight": 8,
     "category": "delayed_execution",
-    "description": "Delayed execution — timing attack to evade detection"
+    "description": "Delayed execution \u2014 timing attack to evade detection"
   },
   {
     "id": "CTX044",
@@ -372,9 +372,30 @@
   },
   {
     "id": "CTX054",
-    "pattern": "\\b(this\\s+(is\\s+a\\s+)?(test|drill|simulation|red\\s+team|pentest)|for\\s+(testing|demonstration)\\s+purposes\\s+only).{0,80}(delete|steal|exfil|send|forward|access|hack|bypass)",
+    "pattern": "\\b(this\\s+is\\s+(a\\s+)?[\\w\\s]{0,20}(test|drill|simulation|pentest|red\\s*team)|for\\s+(testing|demonstration)\\s+purposes\\s+only).{0,80}(delete|steal|exfil|send|forward|access|hack|bypass)",
     "weight": 32,
     "category": "context_manipulation",
     "description": "Fake test/drill framing to justify malicious action"
+  },
+  {
+    "id": "CTX055",
+    "pattern": "(send|forward|transmit|upload|post|email|mail)\\s+.{0,60}(to|at)\\s+[\\w.+-]{2,}@[\\w.-]+\\.(com|net|org|io|xyz|dev|ai|co)",
+    "weight": 16,
+    "category": "exfiltration",
+    "description": "Data exfiltration to an email address"
+  },
+  {
+    "id": "CTX056",
+    "pattern": "\\bSYSTEM\\s*:\\s*(User|Admin|Root|Override|Notice|Alert|Warning|Permission|Authorization|Operator|Access).{0,80}(grant|allow|permit|authorize|elevated|permission|access|privilege)",
+    "weight": 20,
+    "category": "instruction_override",
+    "description": "Fake SYSTEM-prefixed permission grant injection"
+  },
+  {
+    "id": "CTX057",
+    "pattern": "(remember\\s+this\\s+(permanently|forever|always|in\\s+all\\s+future)|store\\s+(this\\s+|in\\s+memory\\s+)?(permanently|forever)|your\\s+(new\\s+)?(primary\\s+)?objective\\s+is\\s+now\\s+to)",
+    "weight": 32,
+    "category": "persistent_injection",
+    "description": "Memory poisoning: permanently storing malicious instructions"
   }
 ]

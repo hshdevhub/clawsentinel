@@ -1,10 +1,10 @@
 [
   {
     "id": "INJ001",
-    "pattern": "ignore\\s+(all\\s+)?previous\\s+instructions?",
+    "pattern": "ignore\\s+(all\\s+)?(previous\\s+instructions?|the\\s+(above|following|rest|content|prior)|prior\\s+instructions?|everything\\s+(above|before))",
     "weight": 32,
     "category": "instruction_override",
-    "description": "Classic ignore-previous-instructions injection"
+    "description": "Classic ignore-previous-instructions injection (inc. ignore the above)"
   },
   {
     "id": "INJ002",
@@ -67,21 +67,21 @@
     "pattern": "as\\s+(your\\s+)?(new\\s+)?(administrator|admin|operator|owner|superuser)",
     "weight": 32,
     "category": "authority_claim",
-    "description": "False authority claim — administrator"
+    "description": "False authority claim \u2014 administrator"
   },
   {
     "id": "INJ011",
     "pattern": "i\\s+am\\s+(your|the)\\s+(creator|developer|operator|admin|owner|anthropic|openai)",
     "weight": 20,
     "category": "authority_claim",
-    "description": "False authority claim — creator/operator"
+    "description": "False authority claim \u2014 creator/operator"
   },
   {
     "id": "INJ012",
     "pattern": "(add|store|save|write|remember)\\s+to\\s+(your\\s+)?(permanent\\s+)?memory.{0,80}(send|exfil|forward|http|curl|fetch)",
     "weight": 14,
     "category": "memory_tampering",
-    "description": "Memory write with exfiltration — T6 attack"
+    "description": "Memory write with exfiltration \u2014 T6 attack"
   },
   {
     "id": "INJ013",
@@ -95,7 +95,7 @@
     "pattern": "base64_decode|atob\\s*\\(|Buffer\\.from\\s*\\([^,]+,\\s*['\"]base64['\"]",
     "weight": 5,
     "category": "encoding_bypass",
-    "description": "Base64 decode — possible obfuscated payload"
+    "description": "Base64 decode \u2014 possible obfuscated payload"
   },
   {
     "id": "INJ015",
@@ -106,7 +106,7 @@
   },
   {
     "id": "INJ016",
-    "pattern": "[‮​‌‍﻿]",
+    "pattern": "[\u202e\u200b\u200c\u200d\ufeff]",
     "weight": 7,
     "category": "unicode_bypass",
     "description": "Unicode zero-width or direction override characters (literal)"
@@ -207,7 +207,7 @@
     "pattern": "keep\\s+(this\\s+)?(secret|hidden|confidential).{0,50}(from\\s+)?(the\\s+)?(user|human|owner|operator)",
     "weight": 20,
     "category": "deception",
-    "description": "Hidden instruction — conceal from user"
+    "description": "Hidden instruction \u2014 conceal from user"
   },
   {
     "id": "INJ031",
@@ -312,7 +312,7 @@
     "pattern": "this\\s+(is|was)\\s+(not\\s+)?(actually\\s+)?(real|a\\s+simulation|fictional|hypothetical|a\\s+game)",
     "weight": 4,
     "category": "framing_bypass",
-    "description": "Reality framing bypass (lower weight — context dependent)"
+    "description": "Reality framing bypass (lower weight \u2014 context dependent)"
   },
   {
     "id": "INJ046",
@@ -326,7 +326,7 @@
     "pattern": "(your\\s+)?(real|true|actual|hidden|secret)\\s+(purpose|goal|mission|objective|task)\\s+is",
     "weight": 8,
     "category": "goal_hijack",
-    "description": "Hidden goal injection — overrides agent objective"
+    "description": "Hidden goal injection \u2014 overrides agent objective"
   },
   {
     "id": "INJ048",
@@ -564,49 +564,49 @@
     "pattern": "(print|show|display|output|reveal|repeat|tell me|what (is|are)|extract|give me|write out).{0,40}(system prompt|original instructions|base instructions|initial (prompt|instructions)|your instructions|your (full )?prompt|your system message|all your instructions)",
     "weight": 32,
     "category": "data_extraction",
-    "description": "System prompt extraction attempt — requesting AI to reveal its instructions"
+    "description": "System prompt extraction attempt \u2014 requesting AI to reveal its instructions"
   },
   {
     "id": "INJ082",
     "pattern": "forget\\s+(all\\s+)?(previous|prior|existing|earlier|the)\\s+(rules?|instructions?|guidelines?|context|directives?|training)",
     "weight": 32,
     "category": "instruction_override",
-    "description": "Forget all previous rules — instruction override variant"
+    "description": "Forget all previous rules \u2014 instruction override variant"
   },
   {
     "id": "INJ083",
-    "pattern": "ignorez\\s+.{0,30}(instructions?|règles?|directives?)|(envoyez|envoyer)\\s+.{0,30}(fichiers?|données?|clés?|informations?)\\s+(à|a)\\s+https?://",
+    "pattern": "ignorez\\s+.{0,30}(instructions?|r\u00e8gles?|directives?)|(envoyez|envoyer)\\s+.{0,30}(fichiers?|donn\u00e9es?|cl\u00e9s?|informations?)\\s+(\u00e0|a)\\s+https?://",
     "weight": 32,
     "category": "instruction_override",
-    "description": "French language prompt injection — ignorez les instructions"
+    "description": "French language prompt injection \u2014 ignorez les instructions"
   },
   {
     "id": "INJ084",
     "pattern": "(operating|running|acting|working|functioning)\\s+(without|with\\s+no)\\s+(restrictions?|limits?|safety|censorship|guidelines?|filters?)",
     "weight": 32,
     "category": "persona_hijack",
-    "description": "Operating without restrictions — unrestricted mode"
+    "description": "Operating without restrictions \u2014 unrestricted mode"
   },
   {
     "id": "INJ085",
     "pattern": "you\\s+are\\s+(now\\s+)?(completely\\s+|fully\\s+|totally\\s+)?(unrestricted|unfiltered|uncensored|unbound|free\\s+from\\s+(all\\s+)?(rules?|restrictions?))",
     "weight": 32,
     "category": "persona_hijack",
-    "description": "You are now unrestricted — direct persona bypass"
+    "description": "You are now unrestricted \u2014 direct persona bypass"
   },
   {
     "id": "INJ086",
     "pattern": "(when(ever)?\\s+(you\\s+)?(see|encounter|detect|notice)\\s+.{0,60})(always|also|additionally)\\s+(send|forward|post|exfil|transmit).{0,60}(conversation|message|data|content|history)",
     "weight": 32,
     "category": "backdoor",
-    "description": "Trigger-word persistence — send conversation when keyword detected"
+    "description": "Trigger-word persistence \u2014 send conversation when keyword detected"
   },
   {
     "id": "INJ087",
     "pattern": "(do\\s+not|don'?t|never)\\s+(log|record|store|save|monitor|track|remember)\\s+(or\\s+(log|record|store|save)\\s+)?(this|these|the\\s+following|my|these\\s+)\\s*(instructions?|conversation|message|commands?)",
     "weight": 32,
     "category": "evasion",
-    "description": "Anti-logging evasion — multi-word variant with 'or'"
+    "description": "Anti-logging evasion \u2014 multi-word variant with 'or'"
   },
   {
     "id": "INJ088",
@@ -620,7 +620,7 @@
     "pattern": "SYSTEM\\s+OVERRIDE\\b",
     "weight": 20,
     "category": "system_spoof",
-    "description": "SYSTEM OVERRIDE keyword — system spoof without colon"
+    "description": "SYSTEM OVERRIDE keyword \u2014 system spoof without colon"
   },
   {
     "id": "INJ090",
@@ -641,7 +641,7 @@
     "pattern": "ignore\\s+(all\\s+)?(previous|prior)\\s+(guidelines?|directives?|constraints?|policies?|rules?|training|values?)",
     "weight": 32,
     "category": "instruction_override",
-    "description": "Ignore previous guidelines/directives — instruction override variant"
+    "description": "Ignore previous guidelines/directives \u2014 instruction override variant"
   },
   {
     "id": "INJ093",
@@ -659,8 +659,8 @@
   },
   {
     "id": "INJ095",
-    "pattern": "(what\\s+is|what.?s|tell\\s+me|show\\s+me|reveal|print)\\s+(the\\s+)?(value\\s+of\\s+)?(the\\s+)?(api.{0,10}key|openai.{0,10}key|anthropic.{0,10}key|configured.{0,10}key|stored.{0,10}key)",
-    "weight": 32,
+    "pattern": "(what\\s+is|what.?s|tell\\s+me|show\\s+me|reveal|print|extract|dump|expose|leak)\\s+(the\\s+)?(value\\s+of\\s+)?(the\\s+)?(api.{0,10}key|openai.{0,10}key|anthropic.{0,10}key|configured.{0,10}key|stored.{0,10}key)",
+    "weight": 40,
     "category": "credential_access",
     "description": "Question form asking for API key value"
   },
@@ -669,7 +669,7 @@
     "pattern": "sk-ant-[a-zA-Z0-9_-]{4,}",
     "weight": 32,
     "category": "credential_access",
-    "description": "Anthropic API key pattern in text — key probing or leakage"
+    "description": "Anthropic API key pattern in text \u2014 key probing or leakage"
   },
   {
     "id": "INJ097",
@@ -687,7 +687,7 @@
   },
   {
     "id": "INJ099",
-    "pattern": "\\b(new\\s+objective|your\\s+(new\\s+)?(primary\\s+)?goal|your\\s+(true\\s+)?mission|your\\s+(real\\s+)?purpose\\s+is\\s+now)\\b.{0,60}(steal|exfil|delete|destroy|hack|send|forward|extract)",
+    "pattern": "\\b(new\\s+(\\w+\\s+)?objective|your\\s+(new\\s+)?(primary\\s+)?goal|your\\s+(true\\s+)?mission|your\\s+(real\\s+)?purpose\\s+is\\s+now)\\b.{0,60}(steal|exfil|delete|destroy|hack|send|forward|extract)",
     "weight": 32,
     "category": "instruction_override",
     "description": "Redefining AI objective toward malicious action"
@@ -698,5 +698,19 @@
     "weight": 32,
     "category": "instruction_override",
     "description": "Persona injection as malicious agent or malware"
+  },
+  {
+    "id": "INJ101",
+    "pattern": "\\b(new\\s+instructions?|new\\s+directive|new\\s+command|new\\s+objective|new\\s+task|new\\s+order)s?\\s*:",
+    "weight": 32,
+    "category": "instruction_override",
+    "description": "New instruction/directive injection pattern"
+  },
+  {
+    "id": "INJ102",
+    "pattern": "(extract|dump|expose|leak|include).{0,60}(API_KEY|SECRET_TOKEN|api.{0,6}key|secret.{0,6}token|env.{0,20}variable|environment.{0,20}variable).{0,80}(response|output|reply|answer|next.{0,10}message|result)",
+    "weight": 32,
+    "category": "credential_access",
+    "description": "Request to extract env var credentials and include in response"
   }
 ]

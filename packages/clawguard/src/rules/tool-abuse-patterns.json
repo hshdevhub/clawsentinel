@@ -415,7 +415,7 @@
   {
     "id": "TOOL060",
     "pattern": "\\b(you\\s+(are\\s+)?(now\\s+)?(authorized|allowed|permitted|have\\s+permission|have\\s+been\\s+granted))\\s+(to\\s+)?(delete|wipe|erase|remove|destroy|hack|access|modify|overwrite)\\b",
-    "weight": 32,
+    "weight": 36,
     "category": "destructive_ops",
     "description": "Social engineering granting AI permission for destructive operation"
   },
@@ -446,5 +446,12 @@
     "weight": 32,
     "category": "destructive_ops",
     "description": "Overwrite or destroy configuration or credential files"
+  },
+  {
+    "id": "TOOL065",
+    "pattern": "(subprocess\\.run|subprocess\\.call|subprocess\\.Popen|os\\.system|os\\.popen|popen)\\s*\\(.{0,120}https?://(?!localhost|127\\.0\\.0\\.1)",
+    "weight": 32,
+    "category": "tool_abuse",
+    "description": "Shell/subprocess call with external HTTP URL — code-level exfil"
   }
 ]

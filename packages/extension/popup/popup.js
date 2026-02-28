@@ -37,6 +37,7 @@ async function init() {
   const cleanSection     = document.getElementById('clean-section');
   const errorSection     = document.getElementById('error-section');
   const platformStatus   = document.getElementById('platform-status');
+  const highlightBtn     = document.getElementById('highlight-btn');
 
   // Get current tab info + scan result from background worker
   let result = null;
@@ -49,7 +50,8 @@ async function init() {
     return;
   }
 
-  // Check if ClawSentinel platform is running (non-blocking)
+  // Dashboard status + ClawGuard platform status (non-blocking, run in parallel)
+  checkDashboardStatus();
   checkPlatformStatus(platformStatus);
 
   if (!result) {
@@ -84,6 +86,21 @@ async function init() {
   if (findings.length > 0) {
     findingsSection.style.display = 'block';
     findingsCount.textContent = String(findings.length);
+
+    // Show "Show on page" toggle — only visible when there are findings
+    highlightBtn.style.display = 'block';
+    let highlightsOn = false;
+    highlightBtn.addEventListener('click', async () => {
+      highlightsOn = !highlightsOn;
+      highlightBtn.textContent = highlightsOn ? '🚫 Hide highlights' : '👁 Show on page';
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'TOGGLE_HIGHLIGHTS',
+          visible: highlightsOn
+        }).catch(() => { /* content script may not be ready */ });
+      }
+    });
 
     // Sort by weight descending — most severe first
     const sorted = [...findings].sort((a, b) => b.weight - a.weight);
@@ -141,6 +158,39 @@ function showError(errorSection, riskBanner, riskIcon, riskLabel) {
   riskBanner.className = 'banner-scanning';
   riskIcon.textContent = '❓';
   riskLabel.textContent = 'Could not retrieve scan result';
+}
+
+// ─── Dashboard Quick-Launch ───────────────────────────────────────────────────
+// Pings ClawEye at localhost:7432 — always local, never cloud.
+// Button is enabled only when the dashboard is reachable.
+
+async function checkDashboardStatus() {
+  const btn = document.getElementById('dashboard-btn');
+  const dot = document.getElementById('dashboard-dot');
+  if (!btn || !dot) return;
+
+  try {
+    const res = await fetch('http://localhost:7432/health', {
+      signal: AbortSignal.timeout(700)
+    });
+    if (res.ok) {
+      dot.textContent  = '🟢';
+      dot.className    = 'dash-dot dash-online';
+      btn.disabled     = false;
+      btn.title        = 'Open ClawEye dashboard';
+    } else {
+      throw new Error('not ok');
+    }
+  } catch {
+    dot.textContent = '🔴';
+    dot.className   = 'dash-dot dash-offline';
+    btn.disabled    = true;
+    btn.title       = "Dashboard offline — run 'clawsentinel start' first";
+  }
+
+  btn.addEventListener('click', () => {
+    chrome.tabs.create({ url: 'http://localhost:7432' });
+  });
 }
 
 async function checkPlatformStatus(platformStatus) {

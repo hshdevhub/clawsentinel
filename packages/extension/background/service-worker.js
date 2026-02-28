@@ -7,6 +7,9 @@
 // tabResults: tabId → latest ScanResult for that tab
 const tabResults = new Map();
 
+// notifiedTabs: tabId → true — prevents re-notifying the same page load
+const notifiedTabs = new Set();
+
 // ─── Context menu — "Scan with ClawSentinel" on text selection ───────────────
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -40,6 +43,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       tabResults.set(tabId, data);
       updateIcon(tabId, data.risk.color);
       updateBadgeText(tabId, data.findings.length);
+
+      // Browser notification for danger-level pages
+      if (data.risk.color === 'red' && data.findings.length > 0) {
+        notifyDanger(tabId, data);
+      }
       break;
     }
 
@@ -64,6 +72,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     }
   }
+});
+
+// ─── Browser notifications ─────────────────────────────────────────────────────
+
+function notifyDanger(tabId, data) {
+  // One notification per page load — don't spam on re-scans
+  if (notifiedTabs.has(tabId)) return;
+  notifiedTabs.add(tabId);
+
+  chrome.storage.sync.get({ quietMode: false }, ({ quietMode }) => {
+    if (quietMode) return;
+
+    let hostname = data.hostname ?? 'this page';
+    try { hostname = new URL(data.url).hostname; } catch { /* use fallback */ }
+
+    const count    = data.findings.length;
+    const topLabel = [...data.findings]
+      .sort((a, b) => b.weight - a.weight)[0]?.label ?? '';
+
+    chrome.notifications.create(`cs-${tabId}`, {
+      type:           'basic',
+      iconUrl:        'icons/icon-red-48.png',
+      title:          'ClawSentinel — Threat Detected',
+      message:        `${hostname}: ${count} injection pattern${count !== 1 ? 's' : ''} found`,
+      contextMessage: topLabel.slice(0, 100),
+      priority:       1
+    }).catch(() => { /* notifications may be disabled by the OS or user */ });
+  });
+}
+
+// Clicking a notification focuses the offending tab
+chrome.notifications.onClicked.addListener((notifId) => {
+  if (!notifId.startsWith('cs-')) return;
+  const tabId = parseInt(notifId.slice(3), 10);
+  if (!isNaN(tabId)) {
+    chrome.tabs.update(tabId, { active: true }).catch(() => {});
+  }
+  chrome.notifications.clear(notifId).catch(() => {});
 });
 
 // ─── Icon state ────────────────────────────────────────────────────────────────
@@ -99,11 +145,13 @@ function updateBadgeText(tabId, findingCount) {
 // Clean up when tab closes — prevent memory leak
 chrome.tabs.onRemoved.addListener(tabId => {
   tabResults.delete(tabId);
+  notifiedTabs.delete(tabId);
 });
 
-// Reset icon to grey on navigation start
+// Reset icon and notification state on navigation start
 chrome.webNavigation?.onBeforeNavigate?.addListener(({ tabId }) => {
   tabResults.delete(tabId);
+  notifiedTabs.delete(tabId); // allow re-notification on next page load
   updateIcon(tabId, 'grey');
   chrome.action.setBadgeText({ tabId, text: '' }).catch(() => {});
 });

@@ -23,7 +23,12 @@
     </div>
 
     <div id="findings-section" style="display:none">
-      <h2>Findings <span id="findings-count" class="count-badge"></span></h2>
+      <div class="findings-header">
+        <h2>Findings <span id="findings-count" class="count-badge"></span></h2>
+        <button id="highlight-btn" class="highlight-btn" style="display:none" title="Show threat locations highlighted on the page">
+          👁 Show on page
+        </button>
+      </div>
       <ul id="findings-list"></ul>
     </div>
 
@@ -40,11 +45,19 @@
       <p class="error-msg">Scan data unavailable.<br>Reload the page to run a fresh scan.</p>
     </div>
 
+    <div id="dashboard-row" class="dashboard-row">
+      <span id="dashboard-dot" class="dash-dot">⚫</span>
+      <button id="dashboard-btn" class="dash-btn" disabled
+              title="Run 'clawsentinel start' to launch the dashboard">
+        Open Dashboard →
+      </button>
+      <span id="platform-status" class="platform-status"></span>
+    </div>
+
     <footer>
       <a href="https://clawsentinel.dev" target="_blank" rel="noopener" class="footer-link">
-        ClawSentinel Platform →
+        clawsentinel.dev
       </a>
-      <span id="platform-status" class="platform-status"></span>
     </footer>
 
   </div>

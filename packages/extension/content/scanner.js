@@ -291,6 +291,22 @@ async function loadRules() {
 
 let _overlayHost = null;
 
+// ─── Injection Highlighting state ─────────────────────────────────────────────
+// Highlight rings + labels are injected after each scan, hidden by default.
+// The popup "Show on page" button sends TOGGLE_HIGHLIGHTS to reveal them.
+const _highlights = [];
+let _highlightsVisible = false;
+
+// Hidden-element selectors mirrored from getPageContent() for re-use in locator
+const _HIDDEN_SELS = [
+  '[style*="display:none"]', '[style*="display: none"]',
+  '[style*="visibility:hidden"]', '[style*="visibility: hidden"]',
+  '[style*="opacity:0"]', '[style*="font-size:0"]', '[style*="font-size: 0"]',
+  '[style*="color:white"]', '[style*="color: white"]',
+  '[style*="color:#fff"]', '[style*="color:#ffffff"]',
+  '[aria-hidden="true"]', '.sr-only',
+];
+
 function scanText(text) {
   const findings = [];
   for (const pattern of PATTERNS) {
@@ -433,9 +449,182 @@ function escHtml(str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// ─── Visual Injection Highlighting ────────────────────────────────────────────
+// For each finding, searches the DOM to locate the element that triggered it,
+// then injects a coloured outline ring + floating label above it.
+// All highlights start hidden; the popup toggle reveals / hides them.
+
+function highlightFindings(findings) {
+  if (!findings.length || !document.body) return;
+
+  for (const finding of findings) {
+    const pattern = PATTERNS.find(p => p.id === finding.id);
+    if (!pattern) continue;
+    const el = _findMatchingElement(pattern, finding.location);
+    if (el) _highlightElement(el, finding);
+  }
+}
+
+// Locate the DOM element that contains the text that triggered `pattern`.
+// Uses location hint from finding.location when available.
+function _findMatchingElement(pattern, location) {
+  // Targeted lookup for specific location types
+  if (location === 'json-ld') {
+    return document.querySelector('script[type="application/ld+json"]') ?? null;
+  }
+
+  if (location.startsWith('hidden (')) {
+    const m = location.match(/^hidden \((.+)\)$/);
+    if (m) {
+      try {
+        for (const el of document.querySelectorAll(m[1])) {
+          if (el.textContent && pattern.test(el.textContent)) return el;
+        }
+      } catch { /* invalid selector */ }
+    }
+  }
+
+  if (location.startsWith('attr[')) {
+    const attr = location.match(/^attr\[(.+)\]$/)?.[1];
+    if (attr) {
+      try {
+        for (const el of document.querySelectorAll(`[${attr}]`)) {
+          const val = el.getAttribute(attr);
+          if (val && pattern.test(val)) return el;
+        }
+      } catch { /* skip */ }
+    }
+  }
+
+  // General fallback: walk text nodes — catches 'text node' and 'page source'
+  try {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = node.textContent;
+      if (text && text.length > 5 && pattern.test(text)) {
+        return node.parentElement ?? null;
+      }
+    }
+  } catch { /* skip */ }
+
+  // Last resort: hidden elements
+  for (const sel of _HIDDEN_SELS) {
+    try {
+      for (const el of document.querySelectorAll(sel)) {
+        if (el.textContent && pattern.test(el.textContent)) return el;
+      }
+    } catch { /* skip */ }
+  }
+
+  return null;
+}
+
+// Inject a coloured ring + label above `el`. Both start hidden (display:none).
+function _highlightElement(el, finding) {
+  if (!el || el === document.body || el === document.documentElement) return;
+
+  // For zero-size elements (display:none), walk up to nearest visible ancestor
+  let target = el;
+  let rect   = target.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) {
+    let p = target.parentElement;
+    while (p && p !== document.body) {
+      rect = p.getBoundingClientRect();
+      if (rect.width > 0 || rect.height > 0) { target = p; break; }
+      p = p.parentElement;
+    }
+    if (rect.width === 0 && rect.height === 0) return; // nothing visible
+  }
+
+  const isHigh  = finding.weight >= 9;
+  const color   = isHigh ? '#dc2626' : '#d97706';
+  const glowBg  = isHigh ? 'rgba(220,38,38,0.08)' : 'rgba(217,119,6,0.08)';
+  const docLeft = Math.round(rect.left + window.scrollX);
+  const docTop  = Math.round(rect.top  + window.scrollY);
+
+  // Outline ring
+  const ring = document.createElement('div');
+  ring.dataset.csHighlight = '1';
+  ring.style.cssText = [
+    'position:absolute',
+    `left:${docLeft}px`,
+    `top:${docTop}px`,
+    `width:${Math.max(Math.round(rect.width), 4)}px`,
+    `height:${Math.max(Math.round(rect.height), 4)}px`,
+    `outline:2px solid ${color}`,
+    'outline-offset:2px',
+    'border-radius:3px',
+    `background:${glowBg}`,
+    'pointer-events:none',
+    'z-index:2147483640',
+    'display:none',
+    'box-sizing:border-box',
+  ].join('!important;') + '!important';
+
+  // Floating label — shown above the ring
+  const labelTop = Math.max(docTop - 22, 0);
+  const shortDesc = finding.label.length > 48
+    ? finding.label.slice(0, 48) + '…'
+    : finding.label;
+
+  const lbl = document.createElement('div');
+  lbl.dataset.csHighlight = '1';
+  lbl.style.cssText = [
+    'position:absolute',
+    `left:${docLeft}px`,
+    `top:${labelTop}px`,
+    `background:${color}`,
+    'color:#fff',
+    'font-family:system-ui,-apple-system,sans-serif',
+    'font-size:10px',
+    'font-weight:700',
+    'line-height:1.5',
+    'padding:2px 7px',
+    'border-radius:4px',
+    'white-space:nowrap',
+    'pointer-events:auto',
+    'cursor:pointer',
+    'z-index:2147483641',
+    'letter-spacing:0.02em',
+    'box-shadow:0 2px 8px rgba(0,0,0,0.25)',
+    'user-select:none',
+    'max-width:300px',
+    'overflow:hidden',
+    'text-overflow:ellipsis',
+    'display:none',
+  ].join('!important;') + '!important';
+
+  lbl.textContent = `${finding.id} · ${shortDesc}`;
+  lbl.title       = finding.label;
+
+  document.documentElement.appendChild(ring);
+  document.documentElement.appendChild(lbl);
+  _highlights.push(ring, lbl);
+
+  // Clicking the label opens the full scan overlay for that element's text
+  lbl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const text = target.textContent?.trim().slice(0, 500) || finding.label;
+    showScanOverlay(text, null);
+  });
+}
+
+function toggleHighlights(visible) {
+  _highlightsVisible = visible;
+  const display = visible ? 'block' : 'none';
+  for (const el of _highlights) {
+    el.style.setProperty('display', display, 'important');
+  }
+}
+
 // ─── Message listener — receives SCAN_SELECTION from service worker ───────────
 
 chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'TOGGLE_HIGHLIGHTS') {
+    toggleHighlights(message.visible ?? !_highlightsVisible);
+    return;
+  }
   if (message.type !== 'SCAN_SELECTION' || !message.text) return;
   const text = message.text;
 
@@ -463,6 +652,7 @@ chrome.runtime.onMessage.addListener((message) => {
     try {
       findings = scanPage();
       risk = computeRisk(findings);
+      highlightFindings(findings); // inject rings hidden by default; popup toggles visibility
     } catch (err) {
       // Never crash the page — silently swallow scanner errors
       findings = [];

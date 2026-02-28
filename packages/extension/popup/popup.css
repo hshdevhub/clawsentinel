@@ -71,16 +71,42 @@ header {
   border-top: 1px solid #f3f4f6;
 }
 
+.findings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 #findings-section h2 {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #9ca3af;
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 0;
+}
+
+/* "Show on page" / "Hide highlights" toggle */
+.highlight-btn {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.highlight-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
 }
 
 .count-badge {
@@ -174,15 +200,58 @@ header {
   line-height: 1.6;
 }
 
+/* ── Dashboard row ───────────────────────────────────────────────────────────── */
+
+#dashboard-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
+}
+
+.dash-dot {
+  font-size: 9px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dash-online  { color: #059669; }
+.dash-offline { color: #9ca3af; }
+
+.dash-btn {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.dash-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.dash-btn:disabled {
+  color: #9ca3af;
+  cursor: default;
+  background: #f9fafb;
+}
+
 /* ── Footer ──────────────────────────────────────────────────────────────────── */
 
 footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 14px;
+  padding: 6px 14px;
   border-top: 1px solid #f3f4f6;
-  background: #f9fafb;
 }
 
 .footer-link {
@@ -197,6 +266,7 @@ footer {
 .platform-status {
   font-size: 10px;
   font-weight: 500;
+  margin-left: auto;
 }
 
 .platform-online  { color: #059669; }

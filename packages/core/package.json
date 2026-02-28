@@ -1,6 +1,6 @@
 {
   "name": "@clawsentinel/core",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Shared types, event bus, SQLite schema and logger for ClawSentinel",
   "license": "Elastic-2.0",
   "author": "hshdevhub",

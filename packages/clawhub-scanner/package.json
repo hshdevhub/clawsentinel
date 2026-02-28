@@ -1,6 +1,6 @@
 {
   "name": "@clawsentinel/clawhub-scanner",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Pre-install skill scanner and supply chain protection — ClawSentinel Module 4",
   "license": "Elastic-2.0",
   "author": "hshdevhub",

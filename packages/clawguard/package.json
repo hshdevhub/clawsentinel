@@ -1,6 +1,6 @@
 {
   "name": "@clawsentinel/clawguard",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "WebSocket + HTTP proxy with 500-rule prompt injection firewall — ClawSentinel Module 3",
   "license": "Elastic-2.0",
   "author": "hshdevhub",
